@@ -1,0 +1,55 @@
+Guida a RooUnfold
+
+NOTA: > testo = codice da inserire nel terminale (senza copiare anche >)
+ 
+Crea una cartella RooUnfold (possibilmente dove installi i programmi)
+
+Esegui
+> svn checkout
+
+Se non ? installato:
+
+> sudo apt install subversion
+
+> wget -m -np http://svnsrv.desy.de/public/unfolding/RooUnfold/trunk/
+> svn checkout http://svnsrv.desy.de/public/unfolding/RooUnfold/trunk/
+> cd trunk/
+> make 
+
+NOTA: se viene restituito l'errore root-config not found and $ROOTSYS is not defined.  Stop.
+Controllare nel ~/.bashrc che siano settate queste variabili:
+
+source /opt/ROOT/build/bin/thisroot.sh
+export ROOTSYS=/opt/ROOT/build
+export PATH=$ROOTSYS/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+
+Se sono gia presenti provare a fare
+
+> root-config
+
+Se funziona e da una risposta allora rieseguite make in una root shell
+
+> sudo -s
+> cd <YourProgram>/RooUnfold/trunk/
+> make
+
+Aggiungere al ~/.bashrc 
+
+# include GSL lib
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+# include RooUnfold
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:<YourProgram>/RooUnfold/trunk
+
+Test:
+> root -l
+> .L <YourProgram>/RooUnfold/trunk/examples/RooUnfoldExample.cxx
+> RooUnfoldExample()
+
+Controlla che root trovi le librerie
+
+> RooUnfold *test = new RooUnfold("nome", "titolo")
+
+
+Se non da errori dovrebbe essere tutto apposto.
