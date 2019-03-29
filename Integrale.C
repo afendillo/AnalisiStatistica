@@ -1,5 +1,5 @@
 #define NRand 1e6
-#define NInt 1e3
+#define NInt 2.5e3
 #define bin 50
 #define xmax 5
 #define xmin 0
@@ -72,7 +72,7 @@ double cFunc(double x) {
 void Integrale()
 {	
 	Reset();
-
+	gStyle->SetOptFit(1111);
 //metodo 1
 
 	TRandom3 *RandGenerator = new TRandom3(time(0));
@@ -88,14 +88,20 @@ void Integrale()
 	HistoInt2->GetXaxis()->SetTitle("Area");
 	HistoInt2->GetYaxis()->SetTitle("Conteggi");
 	HistoInt2->SetFillColorAlpha(kGreen, 0.30);
+
+	TF1 *f = new TF1("f","gaus(0)" , 0 , 10);
+	f->SetParameter(0 , 1);
+	f->SetParameter(1 , 9531.25);
+	f->SetParameter(2 , 1);
+
 	cout<<"\nStarting....\n";
 	for (int i = 0; i<NInt; i++)
 	{
 		I=0;J=0;
 		if(i%(int)(NInt/100)==0) 
 		{
-			for (int k = 0 ; k<i/(int)(NInt/10)+1; k++) cout << "*" ;
-			cout<<" "<< i/(int)(NInt/100)<< "% \r";
+			for (int k = 0 ; k<i/(int)(NInt/100)+1; k++) cout << "*" ;
+			cout<<" "<< i/(int)(NInt/100)+1<< "% \r";
 			cout<<flush;
 		}
 		for(int j = 0 ; j<NRand; j++)
@@ -115,10 +121,12 @@ void Integrale()
 	TCanvas *c1 = new TCanvas();
 	c1->SetGrid();
 	HistoInt->Draw();
+	HistoInt->Fit("f", "Q");
 
 	TCanvas *c2 = new TCanvas();
 	c2->SetGrid();
 	HistoInt2->Draw();
+	HistoInt2->Fit("f" , "Q");
 
 	return;	
 }

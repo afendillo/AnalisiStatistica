@@ -217,7 +217,6 @@ void KSBreitROOT(char stamp='Q')
 	BreitHisto->Draw();
 
 	BreitHisto->Fit("breit" , "Q");
-	gStyle->SetOptFit(1111);
 	return;	
 }
 
