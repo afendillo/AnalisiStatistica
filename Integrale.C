@@ -22,7 +22,6 @@ void Reset(){
 }
 //Poly function
 double poly (double x) {
-
 	return x*x*x*(x*(3*x + 2) + 3);
 }
 
@@ -38,7 +37,6 @@ double cumul (double x) {
 
 //Cumulante invertita
 double lumuc (double x) {
-
 	return pow(x, 1./4.);
 }
 
@@ -76,7 +74,7 @@ void Integrale()
 //metodo 1
 
 	TRandom3 *RandGenerator = new TRandom3(time(0));
-	double Result , Rmin = 0, Rmax = 0 , I ,J, x , y;
+	double Result , Rmin = 0, Rmax = 0 , I ,J, IS, x , y , xS;
 	double Result2, ymin = cumul(xmin), ymax = cumul(xmax);
 
 	TH1D *HistoInt = new TH1D ("HistoInt" , "Uniforme" , bin ,Rmin, Rmax);
@@ -89,21 +87,31 @@ void Integrale()
 	HistoInt2->GetYaxis()->SetTitle("Conteggi");
 	HistoInt2->SetFillColorAlpha(kGreen, 0.30);
 
+	TH1D *HistoInt3 = new TH1D ("HistoInt3" , "Samplig Stratificato" , bin ,Rmin, Rmax);
+	HistoInt3->GetXaxis()->SetTitle("Area");
+	HistoInt3->GetYaxis()->SetTitle("Conteggi");
+	HistoInt3->SetFillColorAlpha(kGreen, 0.30);
+
 	TF1 *f = new TF1("f","gaus(0)" , 0 , 10);
 	f->SetParameter(0 , 1);
 	f->SetParameter(1 , 9531.25);
 	f->SetParameter(2 , 1);
 
+	double RangeS=Range/2, xminS=0;
 	cout<<"\nStarting....\n";
 	for (int i = 0; i<NInt; i++)
 	{
-		I=0;J=0;
+		I=0;J=0;IS=0;
 		if(i%(int)(NInt/100)==0) 
 		{
 			for (int k = 0 ; k<i/(int)(NInt/100)+1; k++) cout << "*" ;
 			cout<<" "<< i/(int)(NInt/100)+1<< "% \r";
 			cout<<flush;
 		}
+
+		if(i<NInt/2) xminS=xmin;
+		else xminS=xmax/2;
+
 		for(int j = 0 ; j<NRand; j++)
 		{
 			
@@ -112,9 +120,15 @@ void Integrale()
 
 			y=lumuc((RandGenerator->Rndm())*(ymax-ymin)+ymin);
 			J = J + poly(y)/trial(y);
+
+			xS=(RandGenerator->Rndm())*(Range/2)+xminS;
+			IS = IS + poly(xS);
+
+			
 		}
 		HistoInt2->Fill( cumul(xmax)*J/NRand);
 		HistoInt->Fill((Range)*I/NRand);
+		HistoInt3->Fill((Range/2)*IS/NRand);
 	}
 	cout<<endl;
 
@@ -127,6 +141,11 @@ void Integrale()
 	c2->SetGrid();
 	HistoInt2->Draw();
 	HistoInt2->Fit("f" , "Q");
+
+	TCanvas *c3 = new TCanvas();
+	c3->SetGrid();
+	HistoInt3->Draw();
+	HistoInt3->Fit("f" , "Q");
 
 	return;	
 }
