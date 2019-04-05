@@ -1,4 +1,4 @@
-#define NRand 1e3
+#define NRand 1e6
 #define NInt 2.5e3
 #define bin 50
 #define xmax 5
@@ -81,7 +81,7 @@ double cFunc(double x) {
 // 		}
 // 	return cumul(xmax)*I/NRand;
 // }
-void Integrale()
+void IntegraleProva()
 {	
 	Reset();
 	gStyle->SetOptFit(1111);
@@ -89,8 +89,8 @@ void Integrale()
 
 	TRandom3 *RandGenerator = new TRandom3(time(0));
 	double Result , Rmin = 0, Rmax = 0 , I ,J, IS, Is, x , y , xS;
-	double Result2, ymin = cumul(xmin), ymax = cumul(xmax), ymid = cumul(xmax/2.);
-	double ymids = cumuls(xmax/2), ymins = cumuls(xmin), ymaxs = cumuls(xmax);
+	double Result2, ymin = cumul(xmin), ymax = cumul(xmax), ymid = cumul(1.);
+	double ymids = cumuls(1), ymins = cumuls(0), ymaxs = cumuls(5);
 
 	TH1D *HistoInt = new TH1D ("HistoInt" , "Uniforme" , bin ,Rmin, Rmax);
 	HistoInt->GetXaxis()->SetTitle("Area");
@@ -116,7 +116,7 @@ void Integrale()
 	cout<<"\nStarting....\n";
 	for (int i = 0; i<NInt; i++)
 	{
-		I=0;J=0;IS=0;
+		I=0; J=0; IS=0;Is=0;
 		if(i%(int)(NInt/100)==0) 
 		{
 			for (int k = 0 ; k<i/(int)(NInt/100)+1; k++) cout << "*" ;
@@ -136,19 +136,19 @@ void Integrale()
 			y=lumuc((RandGenerator->Rndm())*(ymax-ymin)+ymin);
 			J = J + poly(y)/trial(y);
 			
-			if(i<NInt/2){
+			
 				xS=slumuc((RandGenerator->Rndm())*(ymids-ymins)+ymins);
 				Is = Is + poly(xS)/trials(xS);
-			}
-			else{
+			
+			
 				xS=lumuc((RandGenerator->Rndm())*(ymax-ymid)+ymid);
 				IS = IS + poly(xS)/trial(xS);
-			}
+			
 			
 		}
 		HistoInt2->Fill( cumul(xmax)*J/NRand);
 		//HistoInt->Fill((Range)*I/NRand);
-		HistoInt3->Fill(((cumul(xmax)-cumul(xmax/2))*IS/(NRand/2))+((cumuls(xmax/2)-cumuls(xmin))*Is/(NRand/2)));
+		HistoInt3->Fill(((cumul(xmax)-cumul(xmax/2))*IS/(NRand))+((cumuls(xmax/2)-cumuls(xmin))*Is/(NRand)));
 	}
 	cout<<endl;
 
