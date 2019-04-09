@@ -171,7 +171,7 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
                 (sig.q).push_back(QRaccolta(Uniforme(y,yout),dist*1.89));//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
                 sig.flag=pos1.piano;
-                (sig.R).push_back(dist);
+                (sig.R).push_back(sqrt(pow(NewX, 2)+pow(yout,2)+pow(zout,2)));
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=yout;
@@ -224,7 +224,7 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
                 (sig.q).push_back(QRaccolta(Uniforme(x,xout),dist*1.89));//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
                 sig.flag=pos1.piano;
-                (sig.R).push_back(dist);
+                (sig.R).push_back(sqrt(pow(xout, 2)+pow(NewY,2)+pow(zout,2)));
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=NewY;
@@ -277,15 +277,19 @@ void FAMU(){
     TH1D* Htheta = new TH1D("Theta" , "Theta", 30  , Pi/2 ,Pi);
     Htheta->GetXaxis()->SetTitle("#vartheta");
     Htheta->GetYaxis()->SetTitle("Conteggi");
+
+    TH1D* Hq = new TH1D("Carica" , "Carica", NFibre  ,0.5 ,NFibre+0.5);
+    Hq->GetXaxis()->SetTitle("# fibra");
+    Hq->GetYaxis()->SetTitle("carica");
     
-    TH1D* HPhi = new TH1D("Phi" , "Phi", 30  , 0 ,2*Pi);
+    TH1D* HPhi = new TH1D("Phi" , "Phi", 100  , 0 ,2*Pi);
     HPhi->GetXaxis()->SetTitle("#phi");
     HPhi->GetYaxis()->SetTitle("Conteggi");
 
-    TH2D* HPos1 = new TH2D("Pos1" , "Pos1", 20  , 0,NFibre*spessore, 10 ,0 ,lunghezza);
+    TH2D* HPos1 = new TH2D("Pos1" , "Pos1", 20  , 0,NFibre*spessore, 20 ,0 ,lunghezza);
     HPos1->SetTitle("Distribuzione Piano 1 (x,y); X; Y; Conteggi ");
 
-    TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 20  , 0, lunghezza, 10 ,0 , NFibre*spessore);
+    TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 20  , 0, lunghezza, 20 ,0 , NFibre*spessore);
     HPos2->SetTitle("Distribuzione Piano 2 (x,y); X; Y; Conteggi ");
     
     for(int i=0; i<1e6;i++){
@@ -294,8 +298,6 @@ void FAMU(){
         posPiano1Up.piano=1;
         
         posPiano1D= Proiezione(posPiano1Up);
-
-        sig = deposito1P(posPiano1Up, posPiano1D);//salva in si Carica raccolta, numero fibra, piano e y.
 
         if(i%(int)(NMuon/100)==0) 
 		{
@@ -307,7 +309,6 @@ void FAMU(){
         Htheta->Fill(posPiano1Up.theta);
         HPhi->Fill(posPiano1Up.phi);
 
-        HPos1->Fill(posPiano1Up.x , posPiano1Up.y);
         //cout<<(posPiano1Up.phi>0 && posPiano1Up.phi<Pi)<<" E "<<(posPiano1D.fibra>posPiano1Up.fibra)<<" E "<<(posPiano1D.x>posPiano1Up.x)<<endl;
         //double *p=CoordinateFibra12Theta(posPiano1Up);
         // cout<<"###########################################################\n";
@@ -322,6 +323,12 @@ void FAMU(){
         // cout<<"SEGNALE\n";
         // StampaSignal(sig);
         if (posPiano1D.flag==0) {
+
+
+            sig = deposito1P(posPiano1Up, posPiano1D);//salva in si Carica raccolta, numero fibra, piano e y.
+            HPos1->Fill(posPiano1Up.x , posPiano1Up.y);//Punti d'entrata-->uniforme.
+
+            for(int j=0 ; j<sig.q.size() ; j++) Hq->Fill(sig.Nf[j] , sig.q[j]);
 
             //NOTA: x e y si sono invertite perchè il secondo piano è ruotato, quindi per usare le funzione è necessario scambiarle, vengono poi nuovamente
             //invertite per mantenere coerenza con la scelta degli assi---->Funzione inversioneXY (viene usata solo per non dover ridefinire la funzione
@@ -359,12 +366,18 @@ void FAMU(){
     Htheta->Draw();
     TCanvas* c1 = new TCanvas();
     c1->SetGrid();
+    HPhi->GetYaxis()->SetRangeUser(0 , HPhi->GetBinContent(HPhi->GetMaximumBin())*1.2);
     HPhi->Draw();
     TCanvas* c2 = new TCanvas();
     c2->SetGrid();
-    HPos1->Draw("COLZ");
+    HPos1->Draw("LEGO");
     TCanvas* c3 = new TCanvas();
     c3->SetGrid();
-    HPos2->Draw("COLZ");
+
+    HPos2->Draw("LEGO");
+
+    TCanvas* c4 = new TCanvas();
+    c4->SetGrid();
+    Hq->Draw("HIST");
     return;
 }
