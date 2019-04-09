@@ -145,9 +145,9 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
     int corr=-1*(pos2.x<pos1.x);
 
     if(pos1.piano*pos2.piano==1){//per il piano 1
-            graph->SetPoint(j, x , y , z);
-            cout<<"----------------------PIANO 1------------------------------\n";
-            cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<endl;
+            // graph->SetPoint(j, x , y , z);
+            // cout<<"----------------------PIANO 1------------------------------\n";
+            // cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<endl;
             for(int i=pos1.fibra+corr; x<spessore*NFibre && y<lunghezza; i=i+k){
                 //Calcola la nuova X=edge della fibra o x finale
                 //NOTA: se la x finale è fuori accettanza verrà usata l'edge della fibra finale
@@ -170,19 +170,19 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
                 z=zout;
                 x=NewX;
 
-                cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<" R: "<<dist<<endl;
-                j++;
-                graph->SetPoint(j, x , y , z);
+                // cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<" R: "<<dist<<endl;
+                // j++;
+                // graph->SetPoint(j, x , y , z);
                 if((i-corr)==pos2.fibra) break;
                 
             }
     }
 
-    TCanvas* c = new TCanvas();
+    // TCanvas* c = new TCanvas();
 
-    graph->SetTitle("Spost; X; Y; Z ");
-    graph->SetMarkerStyle(20);
-    graph->Draw("LINE PL");
+    // graph->SetTitle("Spost; X; Y; Z ");
+    // graph->SetMarkerStyle(20);
+    // graph->Draw("LINE PL");
     return sig;
 }
 
@@ -197,9 +197,9 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
     int corr=-1*(pos2.y<pos1.y);
 
     if(pos1.piano*pos2.piano==4){//per il piano 1
-            graph->SetPoint(j, x , y , z);
-            cout<<"----------------------PIANO 2------------------------------\n";
-            cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<endl;
+            // graph->SetPoint(j, x , y , z);
+            // cout<<"----------------------PIANO 2------------------------------\n";
+            // cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<endl;
             for(int i=pos1.fibra+corr; y<spessore*NFibre && x<lunghezza; i=i+k){
                 //Calcola la nuova Y=edge della fibra o y finale
                 //NOTA: se la y finale è fuori accettanza verrà usata l'edge della fibra finale
@@ -222,18 +222,18 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
                 z=zout;
                 x=xout;
 
-                cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<" R: "<<dist<<endl;
-                j++;
-                graph->SetPoint(j, x , y , z);
+                // cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<" R: "<<dist<<endl;
+                // j++;
+                // graph->SetPoint(j, x , y , z);
                 if((i-corr)==pos2.fibra) break;
                 
             }
     }
-    TCanvas* c = new TCanvas();
+    // TCanvas* c = new TCanvas();
 
-    graph->SetTitle("Spost; X; Y; Z ");
-    graph->SetMarkerStyle(20);
-    graph->Draw("LINE PL");
+    // graph->SetTitle("Spost; X; Y; Z ");
+    // graph->SetMarkerStyle(20);
+    // graph->Draw("LINE PL");
     return sig;
 }
 
@@ -255,79 +255,61 @@ posizione3D SetCoord(double x , double y, double theta, double phi){
     return pos;
 }
 
+void FreeMemory (segnale sig){
+    for(int i =0 ; i<(sig.flag).size(); i++){
+    }
+    return;
+}
+
 void FAMU(){
 
     Reset();
 
+    int NMuon = 1e6;
+
     TRandom3* rand= new TRandom3(time(0));
     posizione3D posPiano1Up, posPiano1D , posPiano2D, posPiano2Up;
+    segnale sig, sig2;
 
-    // int n=0;
+    TH1D* Htheta = new TH1D("Theta" , "Theta", 10  , Pi/2 ,Pi);
+    TH1D* HPhi = new TH1D("Phi" , "Phi", 10  , 0 ,2*Pi);
 
-    // TGraph2D* graph = new TGraph2D();
-    // posPiano1Up = CoordPoint1P(rand); 
-
-    // graph->SetPoint(n ,posPiano1Up.x,posPiano1Up.y,0.9 );
-
-    // posPiano1Up.piano=1;
-    // posPiano1D= Proiezione(posPiano1Up);
-    // if (posPiano1D.flag==0) {
-    //     graph->SetPoint(n+1 ,posPiano1D.x,posPiano1D.y,0.61 );
-    //     posPiano2Up =InversionXY(posPiano1D);
-    //     posPiano2Up.piano=2;
-    //     graph->SetPoint(n+2 ,posPiano2Up.x,posPiano2Up.y,0.59 );
-
-    //     posPiano2D=Proiezione(posPiano2Up);
-    //     posPiano2D.piano=2;
-    //     if(posPiano2D.flag==0){
-    //         graph->SetPoint(n+3 ,posPiano2D.x,posPiano2D.y,0.3 );
-    //     }
-    // }
-    // cout<<"################################################################################################################## \n";
-    // cout<<"\n PIANO "<<posPiano1Up.piano<<" Up \n";
-    // cout<<"\n X : "<<posPiano1Up.x<<" , Y : "<<posPiano1Up.y<<" Angolo theta: "<< Conv*posPiano1Up.theta<<"° , Angolo phi: "<<Conv*posPiano1Up.phi<<"°"<<endl;
-    // cout<<"Fibra numero: "<<posPiano1Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano1Up.y<<"\n";
-
-    // cout<<"\n PIANO "<<posPiano1D.piano<<" D \n";
-    // cout<<"\n X : "<<posPiano1D.x<<" , Y : "<<posPiano1D.y<<" Angolo theta: "<<Conv*posPiano1D.theta<<"° , Angolo phi: "<<Conv*posPiano1D.phi<<"° \n";
-    // if (posPiano1D.flag==0) cout<<"Fibra numero: "<<posPiano1D.fibra<<" , distanza da PM: "<<lunghezza-posPiano1D.y<<"\n";
-    // else cout<<"Fuori accettanza \n";
-    // cout<<"------------------------------------------------ \n";
-    // if (posPiano1D.flag==0) {
-
-    //     cout<<"\n PIANO "<<posPiano2Up.piano<<" D \n";
-    //     cout<<"\n X : "<<posPiano2Up.x<<" , Y : "<<posPiano2Up.y<<" Angolo theta: "<< Conv*posPiano2Up.theta<<"° , Angolo phi: "<<Conv*posPiano2Up.phi<<"° \n";
-    //     cout<<"Fibra numero: "<<posPiano2Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano2Up.x<<"\n";
-
-    //     cout<<"\n PIANO "<<posPiano2D.piano<<" D \n";
-    //     cout<<"\n X : "<<posPiano2D.x<<" , Y : "<<posPiano2D.y<<" Angolo theta: "<< Conv*posPiano2D.theta<<"° , Angolo phi: "<<Conv*posPiano2D.phi<<"° \n";
-    //     if (posPiano2D.flag==0) cout<<"Fibra numero: "<<posPiano2D.fibra<<" , distanza da PM: "<<lunghezza-posPiano2D.x<<"\n";
-    //     else cout<<"Fuori accettanza \n";
-    // }
-    // graph->Draw("LINE");
+    TH2D* HPos1 = new TH2D("Pos1" , "Pos1", 10  , 0,NFibre*spessore, 10 ,0 ,lunghezza);
+    TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 10  , 0, lunghezza, 10 ,0 , NFibre*spessore);
     
-    for(int i=0; i<1;i++){
-        //posPiano1Up = CoordPoint1P(rand);
-        posPiano1Up=SetCoord(9.5566 , 9.72505 , 155.789 , 161.105);//setta le coord a mano, angoli in gradi.
+    for(int i=0; i<NMuon;i++){
+        posPiano1Up = CoordPoint1P(rand);
+        // posPiano1Up=SetCoord(9.5566 , 9.72505 , 155.789 , 161.105);//setta le coord a mano, angoli in gradi.
         posPiano1Up.piano=1;
         
         posPiano1D= Proiezione(posPiano1Up);
 
-        auto sig = deposito1P(posPiano1Up, posPiano1D);
+        sig = deposito1P(posPiano1Up, posPiano1D);
+		
+        if(i%(int)(NMuon/100)==0) 
+		{
+			for (int k = 0 ; k<i/(int)(NMuon/100)+1; k++) cout << "*" ;
+			cout<<" "<< i/(int)(NMuon/100)+1<< "% \r";
+			cout<<flush;
+		}
 
+        Htheta->Fill(posPiano1Up.theta);
+        HPhi->Fill(posPiano1Up.phi);
+
+        HPos1->Fill(posPiano1Up.x , posPiano1Up.y);
         //cout<<(posPiano1Up.phi>0 && posPiano1Up.phi<Pi)<<" E "<<(posPiano1D.fibra>posPiano1Up.fibra)<<" E "<<(posPiano1D.x>posPiano1Up.x)<<endl;
         //double *p=CoordinateFibra12Theta(posPiano1Up);
-        cout<<"###########################################################\n";
-        cout<<"\n PIANO "<<posPiano1Up.piano<<" Up \n";
-        cout<<"\n X : "<<posPiano1Up.x<<" , Y : "<<posPiano1Up.y<<" Angolo theta: "<< Conv*posPiano1Up.theta<<"° , Angolo phi: "<<Conv*posPiano1Up.phi<<"°"<<endl;
-        cout<<"Fibra numero: "<<posPiano1Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano1Up.y<<"\n";
+        // cout<<"###########################################################\n";
+        // cout<<"\n PIANO "<<posPiano1Up.piano<<" Up \n";
+        // cout<<"\n X : "<<posPiano1Up.x<<" , Y : "<<posPiano1Up.y<<" Angolo theta: "<< Conv*posPiano1Up.theta<<"° , Angolo phi: "<<Conv*posPiano1Up.phi<<"°"<<endl;
+        // cout<<"Fibra numero: "<<posPiano1Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano1Up.y<<"\n";
 
-        cout<<"\n PIANO "<<posPiano1D.piano<<" D \n";
-        cout<<"\n X : "<<posPiano1D.x<<" , Y : "<<posPiano1D.y<<" Angolo theta: "<<Conv*posPiano1D.theta<<"° , Angolo phi: "<<Conv*posPiano1D.phi<<"° \n";
-        cout<<"Fibra numero: "<<posPiano1D.fibra<<" , distanza da PM: "<<lunghezza-posPiano1D.y<<"\n";
-        cout<<"-----------------------------------------------------------\n";
-        cout<<"SEGNALE\n";
-        StampaSignal(sig);
+        // cout<<"\n PIANO "<<posPiano1D.piano<<" D \n";
+        // cout<<"\n X : "<<posPiano1D.x<<" , Y : "<<posPiano1D.y<<" Angolo theta: "<<Conv*posPiano1D.theta<<"° , Angolo phi: "<<Conv*posPiano1D.phi<<"° \n";
+        // cout<<"Fibra numero: "<<posPiano1D.fibra<<" , distanza da PM: "<<lunghezza-posPiano1D.y<<"\n";
+        // cout<<"-----------------------------------------------------------\n";
+        // cout<<"SEGNALE\n";
+        // StampaSignal(sig);
         // double R=sqrt(pow(posPiano1D.x-posPiano1Up.x,2)+pow(posPiano1D.y-posPiano1Up.y,2)+0.3*0.3);
         // cout<<"R: "<<R<<endl;
         // cout<<"X: "<<sqrt(pow(posPiano1Up.x,2)+pow(posPiano1Up.y,2))*sin(posPiano1Up.phi)*sin(posPiano1Up.theta)<<endl;
@@ -345,22 +327,36 @@ void FAMU(){
             posPiano2D=Proiezione(posPiano2Up);
             posPiano2D.piano=2;
 
-            auto sig2=deposito2P(posPiano2Up,posPiano2D);
+            sig2=deposito2P(posPiano2Up,posPiano2D);
 
-            cout<<"\n PIANO "<<posPiano2Up.piano<<" D \n";
-            cout<<"\n X : "<<posPiano2Up.x<<" , Y : "<<posPiano2Up.y<<" Angolo theta: "<< Conv*posPiano2Up.theta<<"° , Angolo phi: "<<Conv*posPiano2Up.phi<<"° \n";
-            cout<<"Fibra numero: "<<posPiano2Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano2Up.x<<"\n";
+            HPos2->Fill(posPiano2Up.x , posPiano2Up.y);
+            // cout<<"\n PIANO "<<posPiano2Up.piano<<" D \n";
+            // cout<<"\n X : "<<posPiano2Up.x<<" , Y : "<<posPiano2Up.y<<" Angolo theta: "<< Conv*posPiano2Up.theta<<"° , Angolo phi: "<<Conv*posPiano2Up.phi<<"° \n";
+            // cout<<"Fibra numero: "<<posPiano2Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano2Up.x<<"\n";
 
-            cout<<"\n PIANO "<<posPiano2D.piano<<" D \n";
-            cout<<"\n X : "<<posPiano2D.x<<" , Y : "<<posPiano2D.y<<" Angolo theta: "<< Conv*posPiano2D.theta<<"° , Angolo phi: "<<Conv*posPiano2D.phi<<"° \n";
-            if (posPiano2D.flag==0) cout<<"Fibra numero: "<<posPiano2D.fibra<<" , distanza da PM: "<<lunghezza-posPiano2D.x<<"\n";
-            else cout<<"Fuori accettanza \n";
-            cout<<"-----------------------------------------------------------\n";
-            cout<<"SEGNALE\n";
-            StampaSignal(sig2);
+            // cout<<"\n PIANO "<<posPiano2D.piano<<" D \n";
+            // cout<<"\n X : "<<posPiano2D.x<<" , Y : "<<posPiano2D.y<<" Angolo theta: "<< Conv*posPiano2D.theta<<"° , Angolo phi: "<<Conv*posPiano2D.phi<<"° \n";
+            // if (posPiano2D.flag==0) cout<<"Fibra numero: "<<posPiano2D.fibra<<" , distanza da PM: "<<lunghezza-posPiano2D.x<<"\n";
+            // else cout<<"Fuori accettanza \n";
+            // cout<<"-----------------------------------------------------------\n";
+            // cout<<"SEGNALE\n";
+            // StampaSignal(sig2);
         }
-        cout<<"###########################################################\n";
-        //delete [] p;
+        // cout<<"###########################################################\n";
     }
+
+    TCanvas* c = new TCanvas();
+    c->SetGrid();
+    Htheta->Draw();
+    TCanvas* c1 = new TCanvas();
+    c1->SetGrid();
+    HPhi->Draw();
+    TCanvas* c2 = new TCanvas();
+    c2->SetGrid();
+    HPos1->Draw("LEGO");
+    TCanvas* c3 = new TCanvas();
+    c3->SetGrid();
+    HPos2->Draw("LEGO");
+
      return;
 }
