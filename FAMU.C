@@ -16,7 +16,7 @@ using namespace std;
 
 struct posizione3D{double x , y , theta, phi;int piano, fibra, flag=0;};
 
-struct segnale {vector <double> Nf, q, y; int flag;};
+struct segnale {vector <double> Nf, q, R; int flag;};
 
 void Reset(){
 	//Recupera la lista di tutti i canvas e li cancella
@@ -56,7 +56,7 @@ double FibraPos(posizione3D pos){
     {
         if((pos.x/spessore)-(int)(pos.x/spessore)==0 && pos.phi>Pi )
         {
-            fibra=ceil(pos.x/spessore)-1;
+            fibra=floor(pos.x/spessore);
         }
         else fibra=ceil(pos.x/spessore);//fibra colpita
     }
@@ -82,7 +82,7 @@ double* Angle(TRandom3* rdm)
 
 posizione3D CoordPoint1P(TRandom3* rdm)
 {
-    //origine estremo del piano quadrato-->prima fibra = pos 0
+    //origine estremo del piano quadrato-->prima fibra = pos 0.3
     posizione3D pos;
     pos.x=rdm->Rndm()*(NFibre)*spessore;
     pos.y=rdm->Rndm()*lunghezza;
@@ -90,6 +90,7 @@ posizione3D CoordPoint1P(TRandom3* rdm)
     pos.theta=posTP[0];
     pos.phi=posTP[1];
     pos.fibra=FibraPos(pos);
+    delete posTP;
     
     return pos;
 }
@@ -132,10 +133,12 @@ double QRaccolta(double x, double E){
 double Uniforme (double x1, double x2){
 
     TRandom3* rand=new TRandom3(time(0));
-    double max, min;
+    double max, min , result;
     max=std::max(x1,x2);
     min=std::min(x1,x2);
-    return rand->Rndm()*(max-min)+min;
+    result=rand->Rndm()*(max-min)+min;
+    rand->Delete();
+    return result;
 }
 
 segnale deposito1P(posizione3D pos1 , posizione3D pos2){
@@ -167,7 +170,7 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
                 (sig.q).push_back(QRaccolta(Uniforme(y,yout),dist*1.89));//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
                 sig.flag=pos1.piano;
-                (sig.y).push_back(yout);
+                (sig.R).push_back(dist);
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=yout;
@@ -220,7 +223,7 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
                 (sig.q).push_back(QRaccolta(Uniforme(x,xout),dist*1.89));//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
                 sig.flag=pos1.piano;
-                (sig.y).push_back(xout);
+                (sig.R).push_back(dist);
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=NewY;
@@ -244,7 +247,7 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
 
 void StampaSignal(segnale sig){
     for(int i =0 ; i<(sig.q).size(); i++){
-        cout<<"Piano: "<<sig.flag<<" , Fibra: "<<sig.Nf[i]<<" , Carica: "<<sig.q[i]<<" , Dist PMT: "<<sig.y[i]<<endl;
+        cout<<"Piano: "<<sig.flag<<" , Fibra: "<<sig.Nf[i]<<" , Carica: "<<sig.q[i]<<" , R: "<<sig.R[i]<<endl;
         cout<<"-----------------------------------------------------------\n";
     }
     return;
@@ -270,11 +273,19 @@ void FAMU(){
     posizione3D posPiano1Up, posPiano1D , posPiano2D, posPiano2Up;
     segnale sig, sig2;
 
-    TH1D* Htheta = new TH1D("Theta" , "Theta", 10  , Pi/2 ,Pi);
-    TH1D* HPhi = new TH1D("Phi" , "Phi", 10  , 0 ,2*Pi);
+    TH1D* Htheta = new TH1D("Theta" , "Theta", 30  , Pi/2 ,Pi);
+    Htheta->GetXaxis()->SetTitle("#vartheta");
+    Htheta->GetYaxis()->SetTitle("Conteggi");
+    
+    TH1D* HPhi = new TH1D("Phi" , "Phi", 30  , 0 ,2*Pi);
+    HPhi->GetXaxis()->SetTitle("#phi");
+    HPhi->GetYaxis()->SetTitle("Conteggi");
 
-    TH2D* HPos1 = new TH2D("Pos1" , "Pos1", 10  , 0,NFibre*spessore, 10 ,0 ,lunghezza);
-    TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 10  , 0, lunghezza, 10 ,0 , NFibre*spessore);
+    TH2D* HPos1 = new TH2D("Pos1" , "Pos1", 20  , 0,NFibre*spessore, 10 ,0 ,lunghezza);
+    HPos1->SetTitle("Distribuzione Piano 1 (x,y); X; Y; Conteggi ");
+
+    TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 20  , 0, lunghezza, 10 ,0 , NFibre*spessore);
+    HPos2->SetTitle("Distribuzione Piano 2 (x,y); X; Y; Conteggi ");
     
     for(int i=0; i<1e6;i++){
         posPiano1Up = CoordPoint1P(rand);
@@ -336,20 +347,12 @@ void FAMU(){
             // StampaSignal(sig2);
             HPos2->Fill(posPiano2Up.x , posPiano2Up.y);
 
-            for(int k =0 ; k<(sig.q).size(); k++){
-                sig.Nf.clear();
-                sig.q.clear();
-                (sig.y).clear();
-                sig2.Nf.clear();
-                sig2.q.clear();
-                (sig2.y).clear();
-            }
-
         }
         // cout<<"###########################################################\n";
     }
+    cout<<endl;
 
-
+    rand->Delete();
     TCanvas* c = new TCanvas();
     c->SetGrid();
     Htheta->Draw();
@@ -358,9 +361,9 @@ void FAMU(){
     HPhi->Draw();
     TCanvas* c2 = new TCanvas();
     c2->SetGrid();
-    HPos1->Draw("LEGO");
+    HPos1->Draw("COLZ");
     TCanvas* c3 = new TCanvas();
     c3->SetGrid();
-    HPos2->Draw("LEGO");
+    HPos2->Draw("COLZ");
     return;
 }
