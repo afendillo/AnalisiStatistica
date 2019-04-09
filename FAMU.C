@@ -1,20 +1,23 @@
-#define Pi TMath::Pi()
-#define NFibre 32
-#define spessore 0.3 //cm
-#define lunghezza 10 //cm
-#define FAC 0.04
-#define Q_e 1.60217662e-19
-#define L 210 //cm
-#define EGamma 197.326e-6*2*Pi/420 //mev nm-->h tagliato
-#define I0 1//cm-2s-1
-#define Conv 180/Pi
+static const double Pi= TMath::Pi();
+static const int NFibre= 32;
+static const double spessore= 0.3; //cm
+static const double lunghezza= 10; //cm
+static const double FAC= 0.04;
+static const double Q_e= 1.60217662e-19;
+static const double L= 210; //cm
+static const double I0= 1;//cm-2s-1
+static const double Conv= 180/Pi;
+static const double EGamma=197.326e-6*2*Pi/420; //mev nm-->h tagliato
 static double G=1e6;//Gain
 static double QE=0.5;//efficienza di conversione
 
 
 using namespace std;
+
 struct posizione3D{double x , y , theta, phi;int piano, fibra, flag=0;};
-struct segnale {vector <double> Nf, en, q, flag;};
+
+struct segnale {vector <double> Nf, q, y; int flag;};
+
 void Reset(){
 	//Recupera la lista di tutti i canvas e li cancella
 	TSeqCollection* canvases = gROOT->GetListOfCanvases();
@@ -138,7 +141,7 @@ double Uniforme (double x1, double x2){
 segnale deposito1P(posizione3D pos1 , posizione3D pos2){
 
     segnale sig;
-    TGraph2D* graph = new TGraph2D();
+    //TGraph2D* graph = new TGraph2D();
     double phi= pos1.phi, yout, dist , y=pos1.y , x=pos1.x, z=0, NewX, zout;
     int NumFibre= abs(pos1.fibra-pos2.fibra), k,j=0;
     k=1*(pos2.x>pos1.x)-1*(pos2.x<pos1.x);//per sapere se andare a destra (x cresce) o sinistra (z decresce)
@@ -160,10 +163,11 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
                 dist=sqrt(pow(NewX-x, 2)+pow(yout-y,2)+pow(zout-z,2));//dist per deposito energia
 
                 //salvo i vari dati: energie depositata, carica, fibra e piano
-                (sig.en).push_back(dist*1.89);
+                //(sig.en).push_back(dist*1.89/EGamma);
                 (sig.q).push_back(QRaccolta(Uniforme(y,yout),dist*1.89));//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
-                (sig.flag).push_back(pos1.piano);
+                sig.flag=pos1.piano;
+                (sig.y).push_back(yout);
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=yout;
@@ -180,7 +184,7 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
 
     // TCanvas* c = new TCanvas();
 
-    // graph->SetTitle("Spost; X; Y; Z ");
+    // graph->SetTitle("Spost 1P; X; Y; Z ");
     // graph->SetMarkerStyle(20);
     // graph->Draw("LINE PL");
     return sig;
@@ -190,7 +194,7 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
 segnale deposito2P(posizione3D pos1 , posizione3D pos2){
 
     segnale sig;
-    TGraph2D* graph = new TGraph2D();
+    //TGraph2D* graph = new TGraph2D();
     double phi= pos1.phi, xout, dist , y=pos1.y , x=pos1.x, z=-0.3, NewY, zout;
     int NumFibre= abs(pos1.fibra-pos2.fibra), k,j=0;
     k=1*(pos2.y>pos1.y)-1*(pos2.y<pos1.y);//per sapere se andare a destra (x cresce) o sinistra (z decresce)
@@ -212,10 +216,11 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
                 dist=sqrt(pow(xout-x, 2)+pow(NewY-y,2)+pow(zout-z,2));//dist per deposito energia
 
                 //salvo i vari dati: energie depositata, carica, fibra e piano
-                (sig.en).push_back(dist*1.89);
+                //(sig.en).push_back(dist*1.89/EGamma);
                 (sig.q).push_back(QRaccolta(Uniforme(x,xout),dist*1.89));//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
-                (sig.flag).push_back(pos1.piano);
+                sig.flag=pos1.piano;
+                (sig.y).push_back(xout);
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=NewY;
@@ -231,15 +236,15 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
     }
     // TCanvas* c = new TCanvas();
 
-    // graph->SetTitle("Spost; X; Y; Z ");
+    // graph->SetTitle("Spost 2P; X; Y; Z ");
     // graph->SetMarkerStyle(20);
     // graph->Draw("LINE PL");
     return sig;
 }
 
 void StampaSignal(segnale sig){
-    for(int i =0 ; i<(sig.flag).size(); i++){
-        cout<<"Piano: "<<sig.flag[i]<<" , Fibra: "<<sig.Nf[i]<<"\ndE: "<<sig.en[i]<<" , Carica: "<<sig.q[i]<<endl;
+    for(int i =0 ; i<(sig.q).size(); i++){
+        cout<<"Piano: "<<sig.flag<<" , Fibra: "<<sig.Nf[i]<<" , Carica: "<<sig.q[i]<<" , Dist PMT: "<<sig.y[i]<<endl;
         cout<<"-----------------------------------------------------------\n";
     }
     return;
@@ -249,23 +254,17 @@ posizione3D SetCoord(double x , double y, double theta, double phi){
     posizione3D pos;
     pos.x=x;
     pos.y=y;
-    pos.theta=Pi*theta/180;
-    pos.phi=Pi*phi/180;
+    pos.theta=theta/Conv;
+    pos.phi=phi/Conv;
     pos.fibra=FibraPos(pos);
     return pos;
-}
-
-void FreeMemory (segnale sig){
-    for(int i =0 ; i<(sig.flag).size(); i++){
-    }
-    return;
 }
 
 void FAMU(){
 
     Reset();
 
-    int NMuon = 1e6;
+    int NMuon=1e6;
 
     TRandom3* rand= new TRandom3(time(0));
     posizione3D posPiano1Up, posPiano1D , posPiano2D, posPiano2Up;
@@ -277,15 +276,15 @@ void FAMU(){
     TH2D* HPos1 = new TH2D("Pos1" , "Pos1", 10  , 0,NFibre*spessore, 10 ,0 ,lunghezza);
     TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 10  , 0, lunghezza, 10 ,0 , NFibre*spessore);
     
-    for(int i=0; i<NMuon;i++){
+    for(int i=0; i<1e6;i++){
         posPiano1Up = CoordPoint1P(rand);
-        // posPiano1Up=SetCoord(9.5566 , 9.72505 , 155.789 , 161.105);//setta le coord a mano, angoli in gradi.
+        //posPiano1Up=SetCoord(0.256784 , 0.32698 , 105.789 , 45.105);//setta le coord a mano, angoli in gradi (90<theta<180, phi<360)
         posPiano1Up.piano=1;
         
         posPiano1D= Proiezione(posPiano1Up);
 
-        sig = deposito1P(posPiano1Up, posPiano1D);
-		
+        sig = deposito1P(posPiano1Up, posPiano1D);//salva in si Carica raccolta, numero fibra, piano e y.
+
         if(i%(int)(NMuon/100)==0) 
 		{
 			for (int k = 0 ; k<i/(int)(NMuon/100)+1; k++) cout << "*" ;
@@ -310,11 +309,6 @@ void FAMU(){
         // cout<<"-----------------------------------------------------------\n";
         // cout<<"SEGNALE\n";
         // StampaSignal(sig);
-        // double R=sqrt(pow(posPiano1D.x-posPiano1Up.x,2)+pow(posPiano1D.y-posPiano1Up.y,2)+0.3*0.3);
-        // cout<<"R: "<<R<<endl;
-        // cout<<"X: "<<sqrt(pow(posPiano1Up.x,2)+pow(posPiano1Up.y,2))*sin(posPiano1Up.phi)*sin(posPiano1Up.theta)<<endl;
-        // cout<<"y: "<<sqrt(pow(posPiano1Up.x,2)+pow(posPiano1Up.y,2))*sin(posPiano1Up.theta)<<endl;
-        // cout<<"z: "<<R*cos(posPiano1Up.theta)<<endl;
         if (posPiano1D.flag==0) {
 
             //NOTA: x e y si sono invertite perchè il secondo piano è ruotato, quindi per usare le funzione è necessario scambiarle, vengono poi nuovamente
@@ -329,7 +323,6 @@ void FAMU(){
 
             sig2=deposito2P(posPiano2Up,posPiano2D);
 
-            HPos2->Fill(posPiano2Up.x , posPiano2Up.y);
             // cout<<"\n PIANO "<<posPiano2Up.piano<<" D \n";
             // cout<<"\n X : "<<posPiano2Up.x<<" , Y : "<<posPiano2Up.y<<" Angolo theta: "<< Conv*posPiano2Up.theta<<"° , Angolo phi: "<<Conv*posPiano2Up.phi<<"° \n";
             // cout<<"Fibra numero: "<<posPiano2Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano2Up.x<<"\n";
@@ -341,9 +334,11 @@ void FAMU(){
             // cout<<"-----------------------------------------------------------\n";
             // cout<<"SEGNALE\n";
             // StampaSignal(sig2);
+            HPos2->Fill(posPiano2Up.x , posPiano2Up.y);
         }
         // cout<<"###########################################################\n";
     }
+
 
     TCanvas* c = new TCanvas();
     c->SetGrid();
@@ -357,6 +352,5 @@ void FAMU(){
     TCanvas* c3 = new TCanvas();
     c3->SetGrid();
     HPos2->Draw("LEGO");
-
-     return;
+    return;
 }
