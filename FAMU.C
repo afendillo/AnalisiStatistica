@@ -16,6 +16,7 @@ using namespace std;
 
 struct posizione3D{double x , y , theta, phi;int piano, fibra, flag=0;};
 
+
 struct segnale {vector <double> Nf, q, R; int flag;};
 
 void Reset(){
