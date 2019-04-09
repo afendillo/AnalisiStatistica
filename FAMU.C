@@ -335,6 +335,16 @@ void FAMU(){
             // cout<<"SEGNALE\n";
             // StampaSignal(sig2);
             HPos2->Fill(posPiano2Up.x , posPiano2Up.y);
+
+            for(int k =0 ; k<(sig.q).size(); k++){
+                sig.Nf.clear();
+                sig.q.clear();
+                (sig.y).clear();
+                sig2.Nf.clear();
+                sig2.q.clear();
+                (sig2.y).clear();
+            }
+
         }
         // cout<<"###########################################################\n";
     }
