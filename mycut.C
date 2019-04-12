@@ -5,7 +5,7 @@
 using namespace std;
 
 
-void MVA(char stamp='Q')
+void mycut(char stamp='Q')
 {
     //Recupera la lista di tutti i canvas e li cancella
 	int count=0;
@@ -85,14 +85,34 @@ void MVA(char stamp='Q')
 	Eff2D->GetYaxis()->SetTitle("Y");
 	Eff2D->SetMarkerColor(kBlue);
 
-    //disegno sullo stesso canvas gli eventi, divisi in modo opportuno rispetto al taglio
-    TCanvas *c1 = new TCanvas();
-    TCut snip = "(y<(1) || x<(0))";
+     
+   TCutG *cutg = new TCutG("CUTG",14);
+   cutg->SetVarX("x");
+   cutg->SetVarY("y");
+   cutg->SetTitle("Graph");
+   cutg->SetFillStyle(1000);
+   cutg->SetPoint(0,0.286533,3.88655);
+   cutg->SetPoint(1,0.0716332,1.78571);
+   cutg->SetPoint(2,0.787966,0.735294);
+   cutg->SetPoint(3,2.43553,0.210084);
+   cutg->SetPoint(4,4.72779,0.630252);
+   cutg->SetPoint(5,6.51862,2.31092);
+   cutg->SetPoint(6,8.09456,5.88235);
+   cutg->SetPoint(7,7.16332,8.29832);
+   cutg->SetPoint(8,6.23209,8.40336);
+   cutg->SetPoint(9,4.15473,8.5084);
+   cutg->SetPoint(10,2.86533,7.77311);
+   cutg->SetPoint(11,0.286533,3.78151);
+   cutg->SetPoint(12,0.286533,3.78151);
+   cutg->SetPoint(13,0.286533,3.88655);
 
-    eve->Draw("y:x >> Sig2D", "s>0" && snip, "");
-    eve->Draw("y:x >> Eff2D", "s>0" && !snip, "SAME");
-    eve->Draw("y:x >> Bkg2D", "s<1" && !snip, "SAME");
-    eve->Draw("y:x >> Pur2D", "s<1" && snip, "SAME");
+    //disegno sullo stesso canvas gli eventi, divisi in modo opportuno rispetto al taglio
+    TCanvas *c2 = new TCanvas();
+
+    eve->Draw("y:x >> Sig2D","s>0 && !CUTG", "");
+    eve->Draw("y:x >> Eff2D", "s>0 && CUTG", "SAME");
+    eve->Draw("y:x >> Bkg2D", "s<1 && CUTG", "SAME");
+    eve->Draw("y:x >> Pur2D", "s<1 && !CUTG", "SAME");
     
     //calcolo purezza ed efficienza del taglio
 
@@ -108,6 +128,6 @@ void MVA(char stamp='Q')
 
     cout <<"Purezza del taglio: "<<purezza<<"%"<<endl;
     cout <<"Efficienza del taglio: "<<efficienza<<"%"<<endl;
-
+ 
     return;
 }
