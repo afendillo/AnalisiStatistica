@@ -1,3 +1,6 @@
+
+R__LOAD_LIBRARY(string)
+
 static const double Pi= TMath::Pi();
 static const int NFibre= 32;
 static const double spessore= 0.3; //cm
@@ -142,11 +145,11 @@ double Uniforme (double x1, double x2){
     return result;
 }
 
-segnale deposito1P(posizione3D pos1 , posizione3D pos2){
+segnale deposito1P(posizione3D pos1 , posizione3D pos2, TH1D* hist){
 
     segnale sig;
     //TGraph2D* graph = new TGraph2D();
-    double phi= pos1.phi, yout, dist , y=pos1.y , x=pos1.x, z=0, NewX, zout;
+    double phi= pos1.phi, yout, dist , y=pos1.y , x=pos1.x, z=0, NewX, zout, Carica;
     int NumFibre= abs(pos1.fibra-pos2.fibra), k,j=0;
     k=1*(pos2.x>pos1.x)-1*(pos2.x<pos1.x);//per sapere se andare a destra (x cresce) o sinistra (z decresce)
     int corr=-1*(pos2.x<pos1.x);
@@ -168,10 +171,11 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
 
                 //salvo i vari dati: energie depositata, carica, fibra e piano
                 //(sig.en).push_back(dist*1.89/EGamma);
-                (sig.q).push_back(QRaccolta(Uniforme(y,yout),dist*1.89));//1.89MeV/cm densità energia media depositata
+                Carica=QRaccolta(Uniforme(y,yout),dist*1.89);
+                (sig.q).push_back(Carica);//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
                 sig.flag=pos1.piano;
-                (sig.R).push_back(sqrt(pow(NewX, 2)+pow(yout,2)+pow(zout,2)));
+                (sig.R).push_back(sqrt(pow(NewX-pos1.x, 2)+pow(yout-pos2.y,2)+pow(zout,2)));
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=yout;
@@ -181,6 +185,7 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
                 // cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<" R: "<<dist<<endl;
                 // j++;
                 // graph->SetPoint(j, x , y , z);
+                hist->Fill(i-corr , Carica);
                 if((i-corr)==pos2.fibra) break;
                 
             }
@@ -195,16 +200,16 @@ segnale deposito1P(posizione3D pos1 , posizione3D pos2){
 }
 
 
-segnale deposito2P(posizione3D pos1 , posizione3D pos2){
+segnale deposito2P(posizione3D pos1 , posizione3D pos2 , TH1D* hist){
 
     segnale sig;
     //TGraph2D* graph = new TGraph2D();
-    double phi= pos1.phi, xout, dist , y=pos1.y , x=pos1.x, z=-0.3, NewY, zout;
+    double phi= pos1.phi, xout, dist , y=pos1.y , x=pos1.x, z=-0.3, NewY, zout , Carica;
     int NumFibre= abs(pos1.fibra-pos2.fibra), k,j=0;
     k=1*(pos2.y>pos1.y)-1*(pos2.y<pos1.y);//per sapere se andare a destra (x cresce) o sinistra (z decresce)
     int corr=-1*(pos2.y<pos1.y);
 
-    if(pos1.piano*pos2.piano==4){//per il piano 1
+    if(pos1.piano*pos2.piano==4){//per il piano 2
             // graph->SetPoint(j, x , y , z);
             // cout<<"----------------------PIANO 2------------------------------\n";
             // cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<endl;
@@ -221,10 +226,11 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
 
                 //salvo i vari dati: energie depositata, carica, fibra e piano
                 //(sig.en).push_back(dist*1.89/EGamma);
-                (sig.q).push_back(QRaccolta(Uniforme(x,xout),dist*1.89));//1.89MeV/cm densità energia media depositata
+                Carica=QRaccolta(Uniforme(x,xout),dist*1.89);
+                (sig.q).push_back(Carica);//1.89MeV/cm densità energia media depositata
                 (sig.Nf).push_back(i-corr);//le fibre sono definite in base alla loro UpperEdge
                 sig.flag=pos1.piano;
-                (sig.R).push_back(sqrt(pow(xout, 2)+pow(NewY,2)+pow(zout,2)));
+                (sig.R).push_back(sqrt(pow(xout-pos1.x, 2)+pow(NewY-pos1.y,2)+pow(zout+0.3,2)));
 
                 //aggiorno le coordinate per il calcolo del punto successivo
                 y=NewY;
@@ -234,6 +240,7 @@ segnale deposito2P(posizione3D pos1 , posizione3D pos2){
                 // cout<<"X: "<<x<<" Y: " <<y <<" Z: "<<z <<" R: "<<dist<<endl;
                 // j++;
                 // graph->SetPoint(j, x , y , z);
+                hist->Fill(i-corr, Carica);
                 if((i-corr)==pos2.fibra) break;
                 
             }
@@ -265,7 +272,6 @@ posizione3D SetCoord(double x , double y, double theta, double phi){
 }
 
 void FAMU(){
-
     Reset();
 
     int NMuon=1e6;
@@ -278,9 +284,14 @@ void FAMU(){
     Htheta->GetXaxis()->SetTitle("#vartheta");
     Htheta->GetYaxis()->SetTitle("Conteggi");
 
-    TH1D* Hq = new TH1D("Carica" , "Carica", NFibre  ,0.5 ,NFibre+0.5);
-    Hq->GetXaxis()->SetTitle("# fibra");
-    Hq->GetYaxis()->SetTitle("carica");
+    double Gain[3] = {5*1e6 , 1e6 , 5*1e5};
+    double Eff[2] = {0.5 , 0.3};
+    string nameG[3]={"G: 5x10^{6}", "G: 10^{6}","G 5x10^{5}"};
+    string nameE[2]={" Q_{E}: 50%", " Q_{E}: 30%"};
+
+    TH1D* h1[6];
+    TH1D* h2[6];
+
     
     TH1D* HPhi = new TH1D("Phi" , "Phi", 100  , 0 ,2*Pi);
     HPhi->GetXaxis()->SetTitle("#phi");
@@ -291,93 +302,126 @@ void FAMU(){
 
     TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 20  , 0, lunghezza, 20 ,0 , NFibre*spessore);
     HPos2->SetTitle("Distribuzione Piano 2 (x,y); X; Y; Conteggi ");
-    
-    for(int i=0; i<1e6;i++){
-        posPiano1Up = CoordPoint1P(rand);
-        //posPiano1Up=SetCoord(0.256784 , 0.32698 , 105.789 , 45.105);//setta le coord a mano, angoli in gradi (90<theta<180, phi<360)
-        posPiano1Up.piano=1;
-        
-        posPiano1D= Proiezione(posPiano1Up);
 
-        if(i%(int)(NMuon/100)==0) 
-		{
-			for (int k = 0 ; k<i/(int)(NMuon/100)+1; k++) cout << "*" ;
-			cout<<" "<< i/(int)(NMuon/100)+1<< "% \r";
-			cout<<flush;
-		}
+    double xl=0.65 , yl=0.13;
+	
+	auto legend = new TLegend(xl,yl,xl+0.25 ,yl+0.25);
+    legend->SetHeader("Gain e Efficienza" , "c");
 
-        Htheta->Fill(posPiano1Up.theta);
-        HPhi->Fill(posPiano1Up.phi);
+    auto legend2 = new TLegend(xl,yl,xl+0.25 ,yl+0.25);
+    legend2->SetHeader("Gain e Efficienza" , "c");
 
-        //cout<<(posPiano1Up.phi>0 && posPiano1Up.phi<Pi)<<" E "<<(posPiano1D.fibra>posPiano1Up.fibra)<<" E "<<(posPiano1D.x>posPiano1Up.x)<<endl;
-        //double *p=CoordinateFibra12Theta(posPiano1Up);
-        // cout<<"###########################################################\n";
-        // cout<<"\n PIANO "<<posPiano1Up.piano<<" Up \n";
-        // cout<<"\n X : "<<posPiano1Up.x<<" , Y : "<<posPiano1Up.y<<" Angolo theta: "<< Conv*posPiano1Up.theta<<"° , Angolo phi: "<<Conv*posPiano1Up.phi<<"°"<<endl;
-        // cout<<"Fibra numero: "<<posPiano1Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano1Up.y<<"\n";
+    int hc=-1;
+    for(int j=0 ; j<3;j++){
+        G=Gain[j];
+        for(int k=0 ; k<2;k++){
+            hc++;
+            h1[hc]=new TH1D( ("Primo Piano " +nameG[j]+nameE[k]).c_str(),("Primo Piano " +nameG[j]+nameE[k]).c_str(), NFibre  ,0.5 ,NFibre+0.5);
+            h1[hc]->GetXaxis()->SetTitle("# fibra");
+            h1[hc]->GetYaxis()->SetTitle("carica");
+            h1[hc]->SetLineColor(j+2);
+            h1[hc]->SetLineStyle(k+1);
 
-        // cout<<"\n PIANO "<<posPiano1D.piano<<" D \n";
-        // cout<<"\n X : "<<posPiano1D.x<<" , Y : "<<posPiano1D.y<<" Angolo theta: "<<Conv*posPiano1D.theta<<"° , Angolo phi: "<<Conv*posPiano1D.phi<<"° \n";
-        // cout<<"Fibra numero: "<<posPiano1D.fibra<<" , distanza da PM: "<<lunghezza-posPiano1D.y<<"\n";
-        // cout<<"-----------------------------------------------------------\n";
-        // cout<<"SEGNALE\n";
-        // StampaSignal(sig);
-        if (posPiano1D.flag==0) {
+            h2[hc]=new TH1D( ("Secondo Piano " +nameG[j]+nameE[k]).c_str(),("Secondo Piano " +nameG[j]+nameE[k]).c_str(), NFibre  ,0.5 ,NFibre+0.5);
+            h2[hc]->GetXaxis()->SetTitle("# fibra");
+            h2[hc]->GetYaxis()->SetTitle("carica");  
+            h2[hc]->SetLineColor(j+2);
+            h2[hc]->SetLineStyle(k+1);
+
+            QE=Eff[k];
+            cout<<"Ciclo: "<<hc+1<<endl;
+            for(int i=0; i<NMuon;i++){
+                posPiano1Up = CoordPoint1P(rand);
+                //posPiano1Up=SetCoord(0.256784 , 0.32698 , 105.789 , 45.105);//setta le coord a mano, angoli in gradi (90<theta<180, phi<360)
+                posPiano1Up.piano=1;
+                
+                posPiano1D= Proiezione(posPiano1Up);
+
+                if(i%(int)(NMuon/100)==0) 
+                {
+                    for (int k = 0 ; k<i/(int)(NMuon/100)+1; k++) cout << "*" ;
+                    cout<<" "<< i/(int)(NMuon/100)+1<< "% \r";
+                    cout<<flush;
+                }
 
 
-            sig = deposito1P(posPiano1Up, posPiano1D);//salva in si Carica raccolta, numero fibra, piano e y.
-            HPos1->Fill(posPiano1Up.x , posPiano1Up.y);//Punti d'entrata-->uniforme.
+                if (posPiano1D.flag==0) {
+                    sig = deposito1P(posPiano1Up, posPiano1D , h1[hc]);//salva in sig la Carica raccolta, numero fibra, piano e R.
+                    posPiano2Up=posPiano1D;
+                    posPiano2Up.piano=2;
+                    posPiano2Up =InversionXY(posPiano2Up);
+                    
+                    posPiano2D=Proiezione(posPiano2Up);
+                    posPiano2D.piano=2;
 
-            for(int j=0 ; j<sig.q.size() ; j++) Hq->Fill(sig.Nf[j] , sig.q[j]);
-
-            //NOTA: x e y si sono invertite perchè il secondo piano è ruotato, quindi per usare le funzione è necessario scambiarle, vengono poi nuovamente
-            //invertite per mantenere coerenza con la scelta degli assi---->Funzione inversioneXY (viene usata solo per non dover ridefinire la funzione
-            //FibraPos)
-            posPiano2Up=posPiano1D;
-            posPiano2Up.piano=2;
-            posPiano2Up =InversionXY(posPiano2Up);
-            
-            posPiano2D=Proiezione(posPiano2Up);
-            posPiano2D.piano=2;
-
-            sig2=deposito2P(posPiano2Up,posPiano2D);
-
-            // cout<<"\n PIANO "<<posPiano2Up.piano<<" D \n";
-            // cout<<"\n X : "<<posPiano2Up.x<<" , Y : "<<posPiano2Up.y<<" Angolo theta: "<< Conv*posPiano2Up.theta<<"° , Angolo phi: "<<Conv*posPiano2Up.phi<<"° \n";
-            // cout<<"Fibra numero: "<<posPiano2Up.fibra<<" , distanza da PM: "<<lunghezza-posPiano2Up.x<<"\n";
-
-            // cout<<"\n PIANO "<<posPiano2D.piano<<" D \n";
-            // cout<<"\n X : "<<posPiano2D.x<<" , Y : "<<posPiano2D.y<<" Angolo theta: "<< Conv*posPiano2D.theta<<"° , Angolo phi: "<<Conv*posPiano2D.phi<<"° \n";
-            // if (posPiano2D.flag==0) cout<<"Fibra numero: "<<posPiano2D.fibra<<" , distanza da PM: "<<lunghezza-posPiano2D.x<<"\n";
-            // else cout<<"Fuori accettanza \n";
-            // cout<<"-----------------------------------------------------------\n";
-            // cout<<"SEGNALE\n";
-            // StampaSignal(sig2);
-            HPos2->Fill(posPiano2Up.x , posPiano2Up.y);
-
+                    sig2=deposito2P(posPiano2Up,posPiano2D , h2[hc]);
+                    if(hc==1){
+                        HPos1->Fill(posPiano1Up.x , posPiano1Up.y);//Punti d'entrata-->uniforme.
+                        HPos2->Fill(posPiano2Up.x , posPiano2Up.y);
+                    }
+                }
+                if(hc==1){
+                    Htheta->Fill(posPiano1Up.theta);
+                    HPhi->Fill(posPiano1Up.phi);
+                }
+                
+            }
+            cout<<"\n";
+	        legend->AddEntry(h1[hc],(nameG[j]+nameE[k]).c_str(),"lp");
+	        legend2->AddEntry(h2[hc],(nameG[j]+nameE[k]).c_str(),"lp");
         }
-        // cout<<"###########################################################\n";
     }
     cout<<endl;
 
+    double m1=0,M1=0, m2=0,M2=0;
+    m1=h1[0]->GetBinContent(h1[0]->GetMinimumBin());
+    m2=h2[0]->GetBinContent(h2[0]->GetMinimumBin());
+    for (int i=0; i<6;i++){
+        if(M1<h1[i]->GetBinContent(h1[i]->GetMaximumBin())) M1=h1[i]->GetBinContent(h1[i]->GetMaximumBin());
+        if(m1>h1[i]->GetBinContent(h1[i]->GetMinimumBin())) m1=h1[i]->GetBinContent(h1[i]->GetMinimumBin());
+
+        if(M2<h2[i]->GetBinContent(h1[i]->GetMaximumBin())) M2=h2[i]->GetBinContent(h2[i]->GetMaximumBin());
+        if(m2>h2[i]->GetBinContent(h2[i]->GetMinimumBin())) m2=h2[i]->GetBinContent(h2[i]->GetMinimumBin());
+    }
     rand->Delete();
-    TCanvas* c = new TCanvas();
+
+    TCanvas* c = new TCanvas("Distribuzione #theta" , "Distribuzione #theta");
     c->SetGrid();
     Htheta->Draw();
-    TCanvas* c1 = new TCanvas();
+
+    TCanvas* c1 = new TCanvas("Distribuzione #phi", "Distribuzione #phi");
     c1->SetGrid();
     HPhi->GetYaxis()->SetRangeUser(0 , HPhi->GetBinContent(HPhi->GetMaximumBin())*1.2);
     HPhi->Draw();
-    TCanvas* c2 = new TCanvas();
+
+    TCanvas* c2 = new TCanvas("Distribuzione Posizione piano 1" , "Distribuzione Posizione piano 1");
     c2->SetGrid();
-    HPos1->Draw("LEGO");
-    TCanvas* c3 = new TCanvas();
+    HPos1->Draw("COLZ");
+
+    TCanvas* c3 = new TCanvas("Distribuzione Posizione piano 2" , "Distribuzione Posizione piano 2");
     c3->SetGrid();
+    HPos2->Draw("COLZ");
 
-    HPos2->Draw("LEGO");
+    h1[0]->SetTitle("Primo piano");
+    h1[0]->SetName("Primo piano");
 
-    TCanvas* c4 = new TCanvas();
+    h2[0]->SetTitle("Secondo piano");
+    h2[0]->SetName("Primo piano");
+
+    TCanvas* c4= new TCanvas("Primo Piano" , "Primo Piano");
     c4->SetGrid();
-    Hq->Draw("HIST");
+    c4-> SetLogy();
+    h1[0]->GetYaxis()->SetRangeUser(m1/10 , M1*2);
+    h1[0]->SetStats(0);
+    for(int i=0; i<6; i++) h1[i]->Draw("HIST same");
+    legend->Draw();
+
+    TCanvas* c5 = new TCanvas("Secondo Piano" , "Secondo Piano");
+    c5->SetGrid();
+    c5-> SetLogy();
+    h2[0]->GetYaxis()->SetRangeUser(m2/10 , M2*2);
+    h2[0]->SetStats(0);
+    for(int i=0; i<6; i++) h2[i]->Draw("HIST same");
+    legend2->Draw();
     return;
 }
