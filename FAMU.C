@@ -19,7 +19,6 @@ using namespace std;
 
 struct posizione3D{double x , y , theta, phi;int piano, fibra, flag=0;};
 
-
 struct segnale {vector <double> Nf, q, R; int flag;};
 
 void Reset(){
@@ -56,7 +55,7 @@ void drawtext()
 
 double FibraPos(posizione3D pos){
     double fibra;
-    if (pos.theta!=0)
+    if (pos.theta!=Pi/2)
     {
         if((pos.x/spessore)-(int)(pos.x/spessore)==0 && pos.phi>Pi )
         {
@@ -129,7 +128,7 @@ posizione3D Proiezione(posizione3D pos)
 
 
 double QRaccolta(double x, double E){
-
+    //x distanza pmt, E energia depositata
     double nGamma=E/EGamma;
     return nGamma*FAC*exp(-x/L)*Q_e*G*QE;
 }
@@ -265,7 +264,7 @@ posizione3D SetCoord(double x , double y, double theta, double phi){
     posizione3D pos;
     pos.x=x;
     pos.y=y;
-    pos.theta=theta/Conv;
+    pos.theta=theta/Conv;//Theta e phi angoli in gradi
     pos.phi=phi/Conv;
     pos.fibra=FibraPos(pos);
     return pos;
@@ -410,7 +409,7 @@ void FAMU(){
 
     TCanvas* c4= new TCanvas("Primo Piano" , "Primo Piano");
     c4->SetGrid();
-    c4-> SetLogy();
+    //c4-> SetLogy();
     h1[0]->GetYaxis()->SetRangeUser(m1/10 , M1*2);
     h1[0]->SetStats(0);
     for(int i=0; i<6; i++) h1[i]->Draw("HIST same");
