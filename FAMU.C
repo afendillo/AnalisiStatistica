@@ -395,11 +395,11 @@ void FAMU(){
 
     TCanvas* c2 = new TCanvas("Distribuzione Posizione piano 1" , "Distribuzione Posizione piano 1");
     c2->SetGrid();
-    HPos1->Draw("COLZ");
+    HPos1->Draw("COLZ text");
 
     TCanvas* c3 = new TCanvas("Distribuzione Posizione piano 2" , "Distribuzione Posizione piano 2");
     c3->SetGrid();
-    HPos2->Draw("COLZ");
+    HPos2->Draw("COLZ text");
 
     h1[0]->SetTitle("Primo piano");
     h1[0]->SetName("Primo piano");

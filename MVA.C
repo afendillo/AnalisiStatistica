@@ -3,24 +3,23 @@
 #define bin 1000
 #define rho 0.4
 using namespace std;
-
-
-void MVA(char stamp='Q')
-{
-    //Recupera la lista di tutti i canvas e li cancella
-	int count=0;
+void Reset(){
+	//Recupera la lista di tutti i canvas e li cancella
 	TSeqCollection* canvases = gROOT->GetListOfCanvases();
 	TIter next(canvases);
 	while(TCanvas *c = (TCanvas*)next())
 	{
 		delete c;
-		count++;
 	}
-	if(stamp!='Q') cout<<count<<" Canvases Deleted"<<endl;
 	//Cancella tutti gli oggetti creati
 	//Necessario per evitare "warning <TROOT::Append>: Replacing existing TH1: <Name> (Potential memory leak)"
 	gROOT->DeleteAll();
-	
+	return;
+}
+
+void MVA(char stamp='Q')
+{
+    Reset();	
 	//Informazioni statistiche da stampare
 	//gStyle->SetOptFit(1111);
 
@@ -28,7 +27,8 @@ void MVA(char stamp='Q')
 
     TRandom3 *Rand = new TRandom3(time(0)); 
 
-    double x, y; int s;
+    double x, y; 
+    int s;
 
     for (int i = 0; i<NSig; i++) //Genera il segnale
     {
@@ -58,6 +58,10 @@ void MVA(char stamp='Q')
         }
         else i--;
     }
+
+    TFile* MyFile= new TFile("MVA.root" , "recreate");
+    if ( MyFile->IsOpen() ) cout<<"File opened successfully\n";
+    eve->Write("MVA");
 
     //per poter plottare gli eventi con 4 colori diversi definisco 4 TH2D
     
@@ -108,6 +112,8 @@ void MVA(char stamp='Q')
 
     cout <<"Purezza del taglio: "<<purezza<<"%"<<endl;
     cout <<"Efficienza del taglio: "<<efficienza<<"%"<<endl;
+
+    //MyFile->Close();
 
     return;
 }
