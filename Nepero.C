@@ -146,7 +146,7 @@ float FcontinuaFloat(float c , int n=N)
 	{
 		//cout<<counter<<" ";
 		counter++;
-		return (int)c+Fcontinua(c , n);
+		return (int)c+FcontinuaFloat(c , n);
 	}
 
 	if(counter>n)
@@ -158,7 +158,7 @@ float FcontinuaFloat(float c , int n=N)
 	//cout<<setprecision(8)<<c*1.<<" "<<1.*int(c)<<"\n";
 	//cout<<counter<<" ";
 	counter++;
-	return 1/((int)a+Fcontinua(a , n));
+	return 1/((int)a+FcontinuaFloat(a , n));
 }
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
@@ -253,11 +253,20 @@ void Nepero()
 		gr1->SetPoint(i,i,e-(float)NeperoLimite(i));
 		gr2->SetPoint(i,i,abs(e-NeperoLimite(i)));
 		gr3->SetPoint(i,i,abs(e-NeperoTaylorFloat(i)));
-		gr4->SetPoint(i,i,(double)(1e-15)+abs(e-NeperoTaylor(i)));
+
+		if (abs(e-NeperoTaylor(i))>0) gr4->SetPoint(i,i,abs(e-NeperoTaylor(i)));
+		else gr4->SetPoint(i,i,(double)(1e-15));
+
 		gr5->SetPoint(i,i,abs(e-NeperoTaylorV2Float(i)));
-		gr6->SetPoint(i,i,(double)(1e-15)+abs(e-NeperoTaylorV2(i)));
-		gr7->SetPoint(i,i,abs(e-Fcontinua(e,i)));
-		gr8->SetPoint(i,i,(double)(1e-15)+abs(e-Fcontinua(e,i)));		
+
+		if (abs(e-NeperoTaylorV2(i))>0) gr6->SetPoint(i,i,(double)(1e-15)+abs(e-NeperoTaylorV2(i)));
+		else gr6->SetPoint(i,i,(double)(1e-15));
+
+		if (abs(e-FcontinuaFloat(e,i))>0) gr7->SetPoint(i,i,abs(e-FcontinuaFloat(e,i)));
+		else gr7->SetPoint(i,i,(double)(1e-15));
+
+		if (abs(e-Fcontinua(e,i))>0) gr8->SetPoint(i,i,(double)(1e-15)+abs(e-Fcontinua(e,i)));
+		else gr8->SetPoint(i,i,(double)(1e-15));		
 		
 		//else cout<<"Simo"<<"\n";
 		//cout<<e<<"-"<<NeperoTaylor(i)<<"="<<(e-NeperoTaylor(i))<<"\n";
@@ -280,7 +289,7 @@ void Nepero()
 	double x=0.65 , y=0.2;
 	
 	auto legend = new TLegend(x,y,x+0.25 ,y+0.2);
-	legend->SetHeader("Algoritmi","C"); // option "C" allows to center the header
+//	legend->SetHeader("Algoritmi","C"); // option "C" allows to center the header
 	legend->AddEntry(gr1,"Nepero Limite Float","lp");
 	legend->AddEntry(gr2,"Nepero Limite Double","lp");
 	
@@ -292,7 +301,6 @@ void Nepero()
 	legend->AddEntry(gr6,"Nepero TaylorV2 Double","lp");
 	legend->AddEntry(gr8,"Nepero Fraz.Continue Double","lp");	
 	
-	
 	TCanvas* c1 = new TCanvas();
 	c1->SetGrid();
 	c1 -> SetLogy();
@@ -303,6 +311,11 @@ void Nepero()
 	// gr4->Draw("pc same");
 	// gr5->Draw("pc same");
 	// gr6->Draw("pc same");
+
+	// for (int i=0 ; i<gr7->GetN(); i++)
+	// {
+	// 	cout<<gr8->GetY()[i]<<endl;
+	// }
 	
 	return;
 }
