@@ -127,7 +127,7 @@ void KSBreitROOT(char stamp='Q')
 	TH1D *Test1D = new TH1D ("Test1D" , "Test1D" , bin , 0 , 1);
 	Test1D->GetXaxis()->SetTitle("X");
 	Test1D->GetYaxis()->SetTitle("Conteggi");
-	Test1D->SetFillColorAlpha(kRed, 0.30);
+	Test1D->SetLineColor(kRed);
 	
 	TH2D *Test2D = new TH2D ("Test2D" , "Test2D" , bin , 0 , 1 , bin , 0 , 1);
 	Test2D->GetXaxis()->SetTitle("X");
@@ -153,7 +153,7 @@ void KSBreitROOT(char stamp='Q')
 		Test1D->Fill(randomX);	
 		Test2D->Fill(randomX , randomY);	
 		Test3D->Fill(randomX , randomY , randomZ);
-        graph2D->SetPoint(i , randomX , randomY );
+        //graph2D->SetPoint(i , randomX , randomY );
 		
 		Media+=randomX;
 		Media2+=randomX*randomX;		
@@ -165,21 +165,23 @@ void KSBreitROOT(char stamp='Q')
 	
 	//cout<<(2<3)*(NRand==NRand)<<endl;
 	
+	Test1D->GetYaxis()->SetRangeUser(0 , Test1D->GetBinContent(Test1D->GetMaximumBin())*1.2);
+
 	TCanvas *CasTest1D = new TCanvas();
 	CasTest1D->SetGrid();
 	Test1D->Draw();
 	
 	TCanvas *CasTest2D = new TCanvas();
 	CasTest2D->SetGrid();
-	Test2D->Draw("E");
+	Test2D->Draw();
 	
 	TCanvas *CasTest3D = new TCanvas();
 	CasTest3D->SetGrid();
 	Test3D->Draw();
     
-    TCanvas *TestGraph2D = new TCanvas();
-	TestGraph2D->SetGrid();
-	graph2D->Draw();
+    // TCanvas *TestGraph2D = new TCanvas();
+	// TestGraph2D->SetGrid();
+	// graph2D->Draw();
 //----------------------------------------------------------------------------------------------------------------------	
 //--------------------------------- Kolmogorov-Smirnov Test for Uniform Distribution -----------------------------------	
 //----------------------------------------------------------------------------------------------------------------------	

@@ -17,7 +17,7 @@ void Reset(){
 	return;
 }
 
-void mycut(char stamp='Q')
+void mycut()
 {
 	Reset();
 	//Informazioni statistiche da stampare

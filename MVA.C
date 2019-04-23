@@ -1,6 +1,6 @@
-#define NSig 10000
-#define NBkg 1000000
-#define bin 1000
+#define NSig 1e4
+#define NBkg 1e6
+#define bin 500
 #define rho 0.4
 using namespace std;
 void Reset(){
@@ -17,7 +17,7 @@ void Reset(){
 	return;
 }
 
-void MVA(char stamp='Q')
+void MVA()
 {
     Reset();	
 	//Informazioni statistiche da stampare
@@ -61,6 +61,10 @@ void MVA(char stamp='Q')
 
     TFile* MyFile= new TFile("MVA.root" , "recreate");
     if ( MyFile->IsOpen() ) cout<<"File opened successfully\n";
+    else {
+        cout<<"Error opening MVA.root\n"; 
+        return;
+    }
     eve->Write("MVA");
 
     //per poter plottare gli eventi con 4 colori diversi definisco 4 TH2D
@@ -98,6 +102,39 @@ void MVA(char stamp='Q')
     eve->Draw("y:x >> Bkg2D", "s<1" && !snip, "SAME");
     eve->Draw("y:x >> Pur2D", "s<1" && snip, "SAME");
     
+
+    TH2D *Eventi = new TH2D ("Eventi" , "Eventi" , bin , -20 , 20 , bin , -20 , 20);
+	Eventi->GetXaxis()->SetTitle("X");
+	Eventi->GetYaxis()->SetTitle("Y");
+	Eventi->SetMarkerColor(kBlue);
+
+
+
+    TCanvas *c2 = new TCanvas();
+    eve->Draw("y:x >> Eventi" , "","COLZ");
+
+
+    TH1D *EventiX = new TH1D ("EventiX" , "Proiezione x" , bin , -10 , 10);
+	EventiX->GetXaxis()->SetTitle("X");
+	EventiX->GetYaxis()->SetTitle("Conteggi");
+	//EventiX->SetMarkerColor(kBlue);
+
+    TH1D *EventiY = new TH1D ("EventiY" , "Proiezione y" , bin , -10 , 10);
+	EventiY->GetXaxis()->SetTitle("Y");
+	EventiY->GetYaxis()->SetTitle("Conteggi");
+
+    TCanvas *c3 = new TCanvas();
+    c3->Divide(2 ,1);
+    c3->cd(1);
+    eve->Draw("x >> EventiX");
+    c3->cd(2);
+    eve->Draw("y >> EventiY");
+
+
+
+
+
+
     //calcolo purezza ed efficienza del taglio
 
     double purezza, efficienza, SS, SB, BS, BB;
