@@ -19,20 +19,21 @@ void Reset(){
 	return;
 }
 
-string Ellisse(double x0 ,double y0, double r_max,double r_min){
-    string el;
+string Ellisse(double x0 ,double y0, double r_max,double r_min , double angle){
+    string ang=to_string(TMath::Pi()*angle/180);
     string X1 = "(x-"+to_string(x0)+")";
     string Y1 = "(y-"+to_string(y0)+")";
-    string X=X1+"/sqrt(2)-"+Y1+"/sqrt(2)";
-    string Y=X1+"/sqrt(2)+"+Y1+"/sqrt(2)";
-    el="(pow("+Y+",2)/"+to_string(r_max*r_max)+"+pow("+X+",2)/"+to_string(r_min*r_min)+">1)";
+    string X=X1+"*cos("+ang+")-"+Y1+"*sin("+ang+")";
+    string Y=X1+"*sin("+ang+")+"+Y1+"*cos("+ang+")";
+    string el="(pow("+Y+",2)/"+to_string(r_max*r_max)+"+pow("+X+",2)/"+to_string(r_min*r_min)+">1)";
     return el;
 }
 
-double ElFunction(double x0 ,double y0, double r_max,double r_min){
+double ElFunction(double x0 ,double y0, double r_max,double r_min, double angle){
+    double ang=TMath::Pi()*angle/180;
     double x1 = x0-4;
     double y1= y0-4;
-    double x=x1/sqrt(2)-y1/sqrt(2) , y=x1/sqrt(2)+y1/sqrt(2);
+    double x=x1*cos(ang)-y1*sin(ang) , y=x1*sin(ang)+y1*cos(ang);
     return y*y/(r_max*r_max)+x*x/(r_min*r_min);
 }
 
@@ -65,19 +66,19 @@ void Click(TNtuple* ev)
         pX=init+passo*num;
 
         TH2D *Sig2Dt = new TH2D ("" , "Plot Run" , bin , -20 , 20 , bin , -20 , 20);
-        Sig2Dt->GetXaxis()->SetTitle("X");Sig2Dt->GetYaxis()->SetTitle("Y");Sig2Dt->SetMarkerColor(kGreen);
+        Sig2Dt->GetXaxis()->SetTitle("X");Sig2Dt->GetYaxis()->SetTitle("Y");Sig2Dt->SetMarkerColor(kGreen);Sig2Dt->SetMarkerSize(2);Sig2Dt->SetLineColor(kGreen);
 
         //eventi background-background -> giallo
         TH2D *Bkg2Dt = new TH2D ("" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
-        Bkg2Dt->GetXaxis()->SetTitle("X");Bkg2Dt->GetYaxis()->SetTitle("Y");Bkg2Dt->SetMarkerColor(kYellow);
+        Bkg2Dt->GetXaxis()->SetTitle("X");Bkg2Dt->GetYaxis()->SetTitle("Y");Bkg2Dt->SetMarkerColor(kYellow);Bkg2Dt->SetMarkerSize(2);Bkg2Dt->SetLineColor(kYellow);
 
         //eventi background-segnale -> rosso
         TH2D *Pur2Dt = new TH2D ("" , "Pur2D" , bin , -20 , 20 , bin , -20 , 20);
-        Pur2Dt->GetXaxis()->SetTitle("X");Pur2Dt->GetYaxis()->SetTitle("Y");Pur2Dt->SetMarkerColor(kRed);
+        Pur2Dt->GetXaxis()->SetTitle("X");Pur2Dt->GetYaxis()->SetTitle("Y");Pur2Dt->SetMarkerColor(kRed);Pur2Dt->SetMarkerSize(2);Pur2Dt->SetLineColor(kRed);
 
         //eventi segnale-background -> blu
         TH2D *Eff2Dt = new TH2D ("" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
-        Eff2Dt->GetXaxis()->SetTitle("X");Eff2Dt->GetYaxis()->SetTitle("Y");Eff2Dt->SetMarkerColor(kBlue);
+        Eff2Dt->GetXaxis()->SetTitle("X");Eff2Dt->GetYaxis()->SetTitle("Y");Eff2Dt->SetMarkerColor(kBlue);Eff2Dt->SetMarkerSize(2);Eff2Dt->SetLineColor(kBlue);
 
         ev->SetBranchAddress("x",&X);
         ev->SetBranchAddress("y",&Y);
@@ -87,13 +88,13 @@ void Click(TNtuple* ev)
         for (Int_t i=0;i<nentries;i++) {
             ev->GetEntry(i);
             if(S>0){
-                if(ElFunction(X, Y, pX, pX*0.88)>1) Sig2Dt->Fill(X,Y);
+                if(ElFunction(X, Y, pX, pX*0.88 ,40)>1) Sig2Dt->Fill(X,Y);
                 else{
                     Eff2Dt->Fill(X,Y);
                 }
             }
             else if(S<1){
-                if(ElFunction(X, Y, pX, pX*0.88)>1) Pur2Dt->Fill(X,Y);
+                if(ElFunction(X, Y, pX, pX*0.88 , 40)>1) Pur2Dt->Fill(X,Y);
                 else{
                     Bkg2Dt->Fill(X,Y);
                 }
@@ -127,7 +128,7 @@ void Click(TNtuple* ev)
         reiezione=100*(BB)/(BB+BS);
 
         cout<<"##################################################################################\n";
-        cout<<"Taglio: "<<(Ellisse(4, 4, pX, pX*0.88)).c_str()<<endl;
+        cout<<"Taglio: "<<(Ellisse(4, 4, pX, pX*0.88 , 40)).c_str()<<endl;
         cout<<"Asse: "<<pX<<endl;
 
         cout<<"Segnale-Segnale: "<<SS<<endl;
@@ -210,19 +211,19 @@ void MVA(int stamp=0)
     
     //eventi segnale-segnale -> verde
     TH2D *Sig2D = new TH2D ("Sig2D" , "Plot Run" , bin , -20 , 20 , bin , -20 , 20);
-	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen);
+	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen);Sig2D->SetMarkerSize(2);Sig2D->SetLineColor(kGreen);
 
     //eventi background-background -> giallo
     TH2D *Bkg2D = new TH2D ("Bkg2D" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
-	Bkg2D->GetXaxis()->SetTitle("X");Bkg2D->GetYaxis()->SetTitle("Y");Bkg2D->SetMarkerColor(kYellow);
+	Bkg2D->GetXaxis()->SetTitle("X");Bkg2D->GetYaxis()->SetTitle("Y");Bkg2D->SetMarkerColor(kYellow);Bkg2D->SetMarkerSize(2);Bkg2D->SetLineColor(kYellow);
 
     //eventi background-segnale -> rosso
     TH2D *Pur2D = new TH2D ("Pur2D" , "Pur2D" , bin , -20 , 20 , bin , -20 , 20);
-	Pur2D->GetXaxis()->SetTitle("X");Pur2D->GetYaxis()->SetTitle("Y");Pur2D->SetMarkerColor(kRed);
+	Pur2D->GetXaxis()->SetTitle("X");Pur2D->GetYaxis()->SetTitle("Y");Pur2D->SetMarkerColor(kRed);Pur2D->SetMarkerSize(2);Pur2D->SetLineColor(kRed);
 
     //eventi segnale-background -> blu
     TH2D *Eff2D = new TH2D ("Eff2D" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
-	Eff2D->GetXaxis()->SetTitle("X");Eff2D->GetYaxis()->SetTitle("Y");Eff2D->SetMarkerColor(kBlue);
+	Eff2D->GetXaxis()->SetTitle("X");Eff2D->GetYaxis()->SetTitle("Y");Eff2D->SetMarkerColor(kBlue);Eff2D->SetMarkerSize(2);Eff2D->SetLineColor(kBlue);
 
     //variabili per i cut
     string basiccut="(y<0 || x<1)";
@@ -280,8 +281,8 @@ void MVA(int stamp=0)
 
     TLegend* legend = new TLegend(); 
 
-    legend->AddEntry(Sig2D , "Segnale-Segnale","p");legend->AddEntry(Eff2D , "Segnale-Fondo","p");
-    legend->AddEntry(Bkg2D , "Fondo-Segnale","p");legend->AddEntry(Pur2D , "Fondo-Fondo","p");
+    legend->AddEntry(Sig2D , "Segnale-Segnale","lp");legend->AddEntry(Eff2D , "Segnale-Fondo","lp");
+    legend->AddEntry(Bkg2D , "Fondo-Segnale","lp");legend->AddEntry(Pur2D , "Fondo-Fondo","lp");
     legend->Draw();
 
     if (stamp==1){
@@ -348,7 +349,7 @@ void MVA(int stamp=0)
     int j=0;
     for(double i =1; i<=a; i=i+passo){
 
-        ellisse = (Ellisse(4, 4, i, i*0.88)).c_str();
+        ellisse = (Ellisse(4, 4, i, i*0.88 , 40)).c_str();
 
         //cout<< (Ellisse(4, 4, a, a*(0.88))).c_str()<<endl;
 
