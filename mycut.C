@@ -28,14 +28,20 @@ void mycut()
     TFile* MyFile = new TFile("MVA.root");
 
     if ( MyFile->IsOpen() ) cout<<"File opened successfully\n";
-    else return;
+    else {
+            cout<<"Error opening MVA.root\n"; 
+            return;
+        }
 
     auto eve = (TNtuple *)((MyFile->GetKey("MVA"))->ReadObj());
 
     TFile* MyCut = new TFile("mycut.root");
     
     if ( MyCut->IsOpen() ) cout<<"Cut opened successfully\n";
-    else return;
+    else {
+            cout<<"Error opening mycut.root\n"; 
+            return;
+        }
 
     auto cutg = (TCutG *)((MyCut->GetKey("CUTG"))->ReadObj());
     cutg->SetVarX("x");
@@ -77,7 +83,9 @@ void mycut()
     
     //calcolo purezza ed efficienza del taglio
 
-    double purezza, efficienza, SS, SB, BS, BB;
+    double reieizione, Sig, purezza, efficienza, SS, SB, BS, BB;
+
+   //calcolo purezza ed efficienza del taglio
 
     SS = Sig2D->GetEntries();
     SB = Eff2D->GetEntries();
@@ -86,9 +94,22 @@ void mycut()
 
     purezza = 100*(SS)/(SS+BS);
     efficienza = 100*(SS)/(SS+SB);
+    Sig=SS/sqrt(BS+SS);
+    reiezione=100*(BB)/(BB+BS);
 
-    cout <<"Purezza del taglio: "<<purezza<<"%"<<endl;
-    cout <<"Efficienza del taglio: "<<efficienza<<"%"<<endl;
+    cout<<"##################################################################################\n";
+    cout<<"Taglio: "<<basiccut.c_str()<<endl;
+
+    cout<<"Segnale-Segnale: "<<SS<<endl;
+    cout<<"Segnale-Fondo: "<<SB<<endl;
+    cout<<"Fondo-Fondo: "<<BB<<endl;
+    cout<<"Fondo-Segnale: "<<BS<<endl;
+
+    cout <<"Purezza del Segnale Iperbole: "<<purezza<<"%"<<endl;
+    cout <<"Efficienza del Segnale Iperbole: "<<efficienza<<"%"<<endl;
+    cout <<"Reiezione del fondo Iperbole: "<<reiezione<<"%"<<endl;
+    cout <<"Significatività del taglio Iperbole: "<<Sig<<endl;
+    cout<<"##################################################################################\n";
  
     return;
 }

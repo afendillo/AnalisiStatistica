@@ -1,7 +1,13 @@
+//Utilizzo .x MVA.C->avvia il programma e crea i vari Canvas. Cliccare su un punto del Canvas Effi&Reiezione per avere il grafico 2D associato al semiasse (valore x)
+//Se non si vuole fare lo studio sul semiasse maggiore .x MVA.C(3)->Stampa i canvas senza fare il ciclio. Con N>3 non stampa e non fa il ciclo
+//.x MVA.C(1) salva i vari canvas in .png e .root NB: i canvas creati cliccando sui punti vanno salvati manualmente.
+//.x MVA.C(2) salva a ntupla in un file root. Necessario se si vuole usare mycut.C per un taglio grafico.
+//Taglio grafico: show tollbar-> forbice. Fai il taglio, SaveAs -> root file. Avvia mycut.C
 #define NSig 1e4
 #define NBkg 1e6
 #define bin 500
 #define rho 0.4
+const static double AngBkg=21.7749;//gradi
 static double a=6, passo = (a-1)/15, init=1+passo;
 static long superSeed=time(0);
 using namespace std;
@@ -88,13 +94,13 @@ void Click(TNtuple* ev)
         for (Int_t i=0;i<nentries;i++) {
             ev->GetEntry(i);
             if(S>0){
-                if(ElFunction(X, Y, pX, pX*0.88 ,40)>1) Sig2Dt->Fill(X,Y);
+                if(ElFunction(X, Y, pX, pX*0.88 ,AngBkg)>1) Sig2Dt->Fill(X,Y);
                 else{
                     Eff2Dt->Fill(X,Y);
                 }
             }
             else if(S<1){
-                if(ElFunction(X, Y, pX, pX*0.88 , 40)>1) Pur2Dt->Fill(X,Y);
+                if(ElFunction(X, Y, pX, pX*0.88 , AngBkg)>1) Pur2Dt->Fill(X,Y);
                 else{
                     Bkg2Dt->Fill(X,Y);
                 }
@@ -103,10 +109,10 @@ void Click(TNtuple* ev)
 
         TLegend* legend = new TLegend(); 
 
-        legend->AddEntry(Sig2Dt , "Segnale-Segnale","p");
-        legend->AddEntry(Eff2Dt , "Segnale-Fondo","p");
-        legend->AddEntry(Bkg2Dt , "Fondo-Segnale","p");
-        legend->AddEntry(Pur2Dt , "Fondo-Fondo","p");
+        legend->AddEntry(Sig2Dt , "Segnale-Segnale","lp");
+        legend->AddEntry(Eff2Dt , "Segnale-Fondo","lp");
+        legend->AddEntry(Bkg2Dt , "Fondo-Segnale","lp");
+        legend->AddEntry(Pur2Dt , "Fondo-Fondo","lp");
         
         TCanvas* c_temp=new TCanvas();
 
@@ -128,7 +134,7 @@ void Click(TNtuple* ev)
         reiezione=100*(BB)/(BB+BS);
 
         cout<<"##################################################################################\n";
-        cout<<"Taglio: "<<(Ellisse(4, 4, pX, pX*0.88 , 40)).c_str()<<endl;
+        cout<<"Taglio: "<<(Ellisse(4, 4, pX, pX*0.88 , AngBkg)).c_str()<<endl;
         cout<<"Asse: "<<pX<<endl;
 
         cout<<"Segnale-Segnale: "<<SS<<endl;
@@ -243,7 +249,7 @@ void MVA(int stamp=0)
     eve->Draw("y:x >> Bkg2D", "s<1" && !ip , "goff");
     eve->Draw("y:x >> Pur2D", "s<1" && ip , "goff");
 
-    if (stamp==1){
+    if (stamp==1 ||stamp==3){
     c1->SaveAs("MVA/iperbole.png");
     c1->SaveAs("MVA/iperbole.root");
     }
@@ -285,7 +291,8 @@ void MVA(int stamp=0)
     legend->AddEntry(Bkg2D , "Fondo-Segnale","lp");legend->AddEntry(Pur2D , "Fondo-Fondo","lp");
     legend->Draw();
 
-    if (stamp==1){
+    if (stamp==1 ||stamp==3){
+    int Cartella= system("mkdir -p MVA");
     c1->SaveAs("MVA/snip.png");
     c1->SaveAs("MVA/snip.root");
     }
@@ -319,74 +326,80 @@ void MVA(int stamp=0)
 
 
 //###################################### Ellisse varibile come taglio: Test ######################################################
-    TGraph* segnale = new TGraph();
-    segnale->SetLineColor(kRed);
-    segnale->SetMarkerStyle(kStar);
+    if(stamp==0 || stamp==1){
+        TGraph* segnale = new TGraph();
+        segnale->SetLineColor(kRed);
+        segnale->SetMarkerStyle(kStar);
 
-    TGraph* fondo = new TGraph();
-    fondo->SetMarkerStyle(kPlus);
-    fondo->SetLineColor(kBlue);
-    TCut ellisse;
+        TGraph* fondo = new TGraph();
+        fondo->SetMarkerStyle(kPlus);
+        fondo->SetLineColor(kBlue);
+        TCut ellisse;
 
-    TMultiGraph* mg = new TMultiGraph();
+        TMultiGraph* mg = new TMultiGraph();
 
-    TH2D *Sig2DT = new TH2D ("Sig2DT" , "Plot Run" , bin , -20 , 20 , bin , -20 , 20);
-	Sig2DT->GetXaxis()->SetTitle("X");Sig2DT->GetYaxis()->SetTitle("Y");Sig2DT->SetMarkerColor(kGreen);
+        TH2D *Sig2DT = new TH2D ("Sig2DT" , "Plot Run" , bin , -20 , 20 , bin , -20 , 20);
+        Sig2DT->GetXaxis()->SetTitle("X");Sig2DT->GetYaxis()->SetTitle("Y");Sig2DT->SetMarkerColor(kGreen);
 
-    //eventi background-background -> giallo
-    TH2D *Bkg2DT = new TH2D ("Bkg2DT" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
-	Bkg2DT->GetXaxis()->SetTitle("X");Bkg2DT->GetYaxis()->SetTitle("Y");Bkg2DT->SetMarkerColor(kYellow);
+        //eventi background-background -> giallo
+        TH2D *Bkg2DT = new TH2D ("Bkg2DT" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
+        Bkg2DT->GetXaxis()->SetTitle("X");Bkg2DT->GetYaxis()->SetTitle("Y");Bkg2DT->SetMarkerColor(kYellow);
 
-    //eventi background-segnale -> rosso
-    TH2D *Pur2DT = new TH2D ("Pur2DT" , "Pur2D" , bin , -20 , 20 , bin , -20 , 20);
-	Pur2DT->GetXaxis()->SetTitle("X");Pur2DT->GetYaxis()->SetTitle("Y");Pur2DT->SetMarkerColor(kRed);
+        //eventi background-segnale -> rosso
+        TH2D *Pur2DT = new TH2D ("Pur2DT" , "Pur2D" , bin , -20 , 20 , bin , -20 , 20);
+        Pur2DT->GetXaxis()->SetTitle("X");Pur2DT->GetYaxis()->SetTitle("Y");Pur2DT->SetMarkerColor(kRed);
 
-    //eventi segnale-background -> blu
-    TH2D *Eff2DT = new TH2D ("Eff2DT" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
-	Eff2DT->GetXaxis()->SetTitle("X");Eff2DT->GetYaxis()->SetTitle("Y");Eff2DT->SetMarkerColor(kBlue);
+        //eventi segnale-background -> blu
+        TH2D *Eff2DT = new TH2D ("Eff2DT" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
+        Eff2DT->GetXaxis()->SetTitle("X");Eff2DT->GetYaxis()->SetTitle("Y");Eff2DT->SetMarkerColor(kBlue);
 
-    a=6;
-    int j=0;
-    for(double i =1; i<=a; i=i+passo){
+        a=6;
+        int j=0;
+        for(double i =1; i<=a; i=i+passo){
 
-        ellisse = (Ellisse(4, 4, i, i*0.88 , 40)).c_str();
+            ellisse = (Ellisse(4, 4, i, i*0.88 , AngBkg)).c_str();
 
-        //cout<< (Ellisse(4, 4, a, a*(0.88))).c_str()<<endl;
+            //cout<< (Ellisse(4, 4, a, a*(0.88))).c_str()<<endl;
 
-        eve->Draw("y:x >> Sig2DT", "s>0" && ellisse, "goff");
-        eve->Draw("y:x >> Eff2DT", "s>0" && !ellisse, "goff");
-        eve->Draw("y:x >> Bkg2DT", "s<1" && !ellisse, "goff");
-        eve->Draw("y:x >> Pur2DT", "s<1" && ellisse, "goff");
+            eve->Draw("y:x >> Sig2DT", "s>0" && ellisse, "goff");
+            eve->Draw("y:x >> Eff2DT", "s>0" && !ellisse, "goff");
+            eve->Draw("y:x >> Bkg2DT", "s<1" && !ellisse, "goff");
+            eve->Draw("y:x >> Pur2DT", "s<1" && ellisse, "goff");
 
-        SS = Sig2DT->GetEntries();
-        SB = Eff2DT->GetEntries();
-        BS = Pur2DT->GetEntries();
-        BB = Bkg2DT->GetEntries();
+            SS = Sig2DT->GetEntries();
+            SB = Eff2DT->GetEntries();
+            BS = Pur2DT->GetEntries();
+            BB = Bkg2DT->GetEntries();
 
-        purezza = 100*(SS)/(SS+BS);
-        efficienza = 100*(SS)/(SS+SB);
-        Sig=SS/sqrt(BS+SS);
-        reiezione=100*(BB)/(BB+BS);
+            purezza = 100*(SS)/(SS+BS);
+            efficienza = 100*(SS)/(SS+SB);
+            Sig=SS/sqrt(BS+SS);
+            reiezione=100*(BB)/(BB+BS);
 
-        cout<<j+1<<") "<<"Efficienza= "<<efficienza<<" , Reiezione="<<reiezione<<" , Asse: "<<i<<" , Significatività: "<<Sig<<endl;
+            cout<<j+1<<") "<<"Efficienza= "<<efficienza<<" , Reiezione="<<reiezione<<" , Asse: "<<i<<" , Significatività: "<<Sig<<endl;
 
-        segnale->SetPoint(j,i , efficienza/100);
-        fondo->SetPoint(j,i , reiezione/100);
-        j++;
+            segnale->SetPoint(j,i , efficienza/100);
+            fondo->SetPoint(j,i , reiezione/100);
+            j++;
 
+        }
+        TLegend* legendg = new TLegend(); 
+        legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");
+
+        TCanvas* c_prova = new TCanvas();
+        mg->Add(segnale);
+        mg->Add(fondo);
+        mg->SetTitle("Roc; SemiAsse; Efficienza");
+
+        c_prova->SetGrid();
+        mg->Draw("APC");
+        legendg->Draw();
+        gPad->AddExec("ex" , "Click(events)");
+        if(stamp==1){
+            c_prova->SaveAs("MVA/Roc.png");
+            // c_prova->SaveAs("MVA/Roc.root");//La funzione di click fa macello se salvi il .root
+        }
     }
-    TLegend* legendg = new TLegend(); 
-    legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");
-
-    TCanvas* c_prova = new TCanvas();
-    mg->Add(segnale);
-    mg->Add(fondo);
-    mg->SetTitle("Roc; SemiAsse; Efficienza");
-
-    c_prova->SetGrid();
-    mg->Draw("APC");
-    legendg->Draw();
-    gPad->AddExec("ex" , "Click(events)");
 
 //################################################################################################################################
     TH2D *Eventi = new TH2D ("Eventi" , "Eventi" , bin , -20 , 20 , bin , -20 , 20);
@@ -413,7 +426,7 @@ void MVA(int stamp=0)
     c3->cd(2);
     eve->Draw("y >> EventiY");
 
-    if (stamp==1){
+    if (stamp==1 ||stamp==3){
         c2->SaveAs("MVA/AllEv.png");
         c2->SaveAs("MVA/AllEv.root");
         c3->SaveAs("MVA/Proizione.png");
