@@ -1,14 +1,15 @@
 //Utilizzo .x MVA.C->avvia il programma e crea i vari Canvas. Cliccare su un punto del Canvas Effi&Reiezione per avere il grafico 2D associato al semiasse (valore x)
 //Se non si vuole fare lo studio sul semiasse maggiore .x MVA.C(3)->Stampa i canvas senza fare il ciclio. Con N>3 non stampa e non fa il ciclo
 //.x MVA.C(1) salva i vari canvas in .png e .root NB: i canvas creati cliccando sui punti vanno salvati manualmente.
-//.x MVA.C(2) salva a ntupla in un file root. Necessario se si vuole usare mycut.C per un taglio grafico.
+//.x MVA.C(2) salva la ntupla in un file root. Necessario se si vuole usare mycut.C per un taglio grafico.
 //Taglio grafico: show tollbar-> forbice. Fai il taglio, SaveAs -> root file. Avvia mycut.C
 #define NSig 1e4
 #define NBkg 1e6
 #define bin 500
 #define rho 0.4
-const static double AngBkg=21.7749;//gradi
-static double a=6, passo = (a-1)/15, init=1+passo;
+const static double AngBkg=47;//21.7749;//gradi
+const static double AsseMin=3.05;//21.7749;//gradi
+static double a=5, passo = (a-1)/25, init=1+passo;
 static long superSeed=time(0);
 using namespace std;
 void Reset(){
@@ -25,22 +26,22 @@ void Reset(){
 	return;
 }
 
-string Ellisse(double x0 ,double y0, double r_max,double r_min , double angle){
+string Ellisse(double x0 ,double y0, double rx,double ry , double angle){
     string ang=to_string(TMath::Pi()*angle/180);
     string X1 = "(x-"+to_string(x0)+")";
     string Y1 = "(y-"+to_string(y0)+")";
-    string X=X1+"*cos("+ang+")-"+Y1+"*sin("+ang+")";
-    string Y=X1+"*sin("+ang+")+"+Y1+"*cos("+ang+")";
-    string el="(pow("+Y+",2)/"+to_string(r_max*r_max)+"+pow("+X+",2)/"+to_string(r_min*r_min)+">1)";
+    string X=X1+"*cos("+ang+")+"+Y1+"*sin("+ang+")";
+    string Y=X1+"*sin("+ang+")-"+Y1+"*cos("+ang+")";
+    string el="(pow("+Y+",2)/"+to_string(ry*ry)+"+pow("+X+",2)/"+to_string(rx*rx)+">1)";
     return el;
 }
 
-double ElFunction(double x0 ,double y0, double r_max,double r_min, double angle){
+double ElFunction(double x0 ,double y0, double rx,double ry, double angle){
     double ang=TMath::Pi()*angle/180;
     double x1 = x0-4;
     double y1= y0-4;
-    double x=x1*cos(ang)-y1*sin(ang) , y=x1*sin(ang)+y1*cos(ang);
-    return y*y/(r_max*r_max)+x*x/(r_min*r_min);
+    double x=x1*cos(ang)+y1*sin(ang) , y=x1*sin(ang)-y1*cos(ang);
+    return y*y/(ry*ry)+x*x/(rx*rx);
 }
 
 void Click(TNtuple* ev)
@@ -86,6 +87,14 @@ void Click(TNtuple* ev)
         TH2D *Eff2Dt = new TH2D ("" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
         Eff2Dt->GetXaxis()->SetTitle("X");Eff2Dt->GetYaxis()->SetTitle("Y");Eff2Dt->SetMarkerColor(kBlue);Eff2Dt->SetMarkerSize(2);Eff2Dt->SetLineColor(kBlue);
 
+        //Proiezione x
+        TH1D *AllX = new TH1D ("" , "AllX" , bin , -20 , 20);
+        AllX->GetXaxis()->SetTitle("X");AllX->GetYaxis()->SetTitle("Conteggi");AllX->SetMarkerColor(kBlue);AllX->SetMarkerSize(2);AllX->SetLineColor(kBlue);
+
+        //Proiezioney
+        TH1D *AllY = new TH1D ("" , "AllY" , bin , -20 , 20);
+        AllY->GetXaxis()->SetTitle("Y");AllY->GetYaxis()->SetTitle("Conteggi");AllY->SetMarkerColor(kBlue);AllY->SetMarkerSize(2);AllY->SetLineColor(kBlue);
+
         ev->SetBranchAddress("x",&X);
         ev->SetBranchAddress("y",&Y);
         ev->SetBranchAddress("s",&S);
@@ -94,13 +103,21 @@ void Click(TNtuple* ev)
         for (Int_t i=0;i<nentries;i++) {
             ev->GetEntry(i);
             if(S>0){
-                if(ElFunction(X, Y, pX, pX*0.88 ,AngBkg)>1) Sig2Dt->Fill(X,Y);
+                if(ElFunction(X, Y, pX, AsseMin ,AngBkg)>1){
+                    Sig2Dt->Fill(X,Y);
+                    AllX->Fill(X);
+                    AllY->Fill(Y);
+                }
                 else{
                     Eff2Dt->Fill(X,Y);
                 }
             }
             else if(S<1){
-                if(ElFunction(X, Y, pX, pX*0.88 , AngBkg)>1) Pur2Dt->Fill(X,Y);
+                if(ElFunction(X, Y, pX, AsseMin , AngBkg)>1){
+                    Pur2Dt->Fill(X,Y);
+                    AllX->Fill(X);
+                    AllY->Fill(Y);
+                }
                 else{
                     Bkg2Dt->Fill(X,Y);
                 }
@@ -134,7 +151,7 @@ void Click(TNtuple* ev)
         reiezione=100*(BB)/(BB+BS);
 
         cout<<"##################################################################################\n";
-        cout<<"Taglio: "<<(Ellisse(4, 4, pX, pX*0.88 , AngBkg)).c_str()<<endl;
+        cout<<"Taglio: "<<(Ellisse(4, 4, pX, AsseMin, AngBkg)).c_str()<<endl;
         cout<<"Asse: "<<pX<<endl;
 
         cout<<"Segnale-Segnale: "<<SS<<endl;
@@ -147,6 +164,13 @@ void Click(TNtuple* ev)
         cout <<"Reiezione del fondo: "<<reiezione<<"%"<<endl;
         cout <<"Significatività del taglio: "<<Sig<<endl;
         cout<<"##################################################################################\n";    
+
+        TCanvas* cp = new TCanvas();
+        cp->Divide(2 , 1);
+        cp->cd(1);
+        AllX->Draw();
+        cp->cd(2);
+        AllY->Draw();
         
         return;
     }
@@ -162,7 +186,7 @@ void MVA(int stamp=0)
     TNtuple *eve = new TNtuple("events", "events", "x:y:s"); //ebbene si, usiamo le NTuple
     
     //Usare superSeed per far funzionare tutto
-    TRandom3 *Rand = new TRandom3(0); 
+    TRandom3 *Rand = new TRandom3(time(0)); 
 
     double x, y; 
     double reiezione, Sig ,purezza, efficienza, SS, SB, BS, BB;
@@ -211,10 +235,12 @@ void MVA(int stamp=0)
             return;
         }
         eve->Write("MVA");
+        cout<<"File saved successfully\n";
     }
 
     //per poter plottare gli eventi con 4 colori diversi definisco 4 TH2D
-    
+
+    //###################Iperbole###########################################################################################################################
     //eventi segnale-segnale -> verde
     TH2D *Sig2D = new TH2D ("Sig2D" , "Plot Run" , bin , -20 , 20 , bin , -20 , 20);
 	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen);Sig2D->SetMarkerSize(2);Sig2D->SetLineColor(kGreen);
@@ -230,7 +256,25 @@ void MVA(int stamp=0)
     //eventi segnale-background -> blu
     TH2D *Eff2D = new TH2D ("Eff2D" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
 	Eff2D->GetXaxis()->SetTitle("X");Eff2D->GetYaxis()->SetTitle("Y");Eff2D->SetMarkerColor(kBlue);Eff2D->SetMarkerSize(2);Eff2D->SetLineColor(kBlue);
+    
+    //########Snip######################################################################################################################################
+    //eventi segnale-segnale -> verde
+    TH2D *Sig2DS = new TH2D ("Sig2DS" , "Plot Run" , bin , -20 , 20 , bin , -20 , 20);
+	Sig2DS->GetXaxis()->SetTitle("X");Sig2DS->GetYaxis()->SetTitle("Y");Sig2DS->SetMarkerColor(kGreen);Sig2DS->SetMarkerSize(2);Sig2DS->SetLineColor(kGreen);
 
+    //eventi background-background -> giallo
+    TH2D *Bkg2DS = new TH2D ("Bkg2DS" , "Bkg2DS" , bin , -20 , 20 , bin , -20 , 20);
+	Bkg2DS->GetXaxis()->SetTitle("X");Bkg2DS->GetYaxis()->SetTitle("Y");Bkg2DS->SetMarkerColor(kYellow);Bkg2DS->SetMarkerSize(2);Bkg2DS->SetLineColor(kYellow);
+
+    //eventi background-segnale -> rosso
+    TH2D *Pur2DS = new TH2D ("Pur2DS" , "Pur2DS" , bin , -20 , 20 , bin , -20 , 20);
+	Pur2DS->GetXaxis()->SetTitle("X");Pur2DS->GetYaxis()->SetTitle("Y");Pur2DS->SetMarkerColor(kRed);Pur2DS->SetMarkerSize(2);Pur2DS->SetLineColor(kRed);
+
+    //eventi segnale-background -> blu
+    TH2D *Eff2DS = new TH2D ("Eff2DS" , "Eff2DS" , bin , -20 , 20 , bin , -20 , 20);
+	Eff2DS->GetXaxis()->SetTitle("X");Eff2DS->GetYaxis()->SetTitle("Y");Eff2DS->SetMarkerColor(kBlue);Eff2DS->SetMarkerSize(2);Eff2DS->SetLineColor(kBlue);
+
+    //#################################################################################################################################################
     //variabili per i cut
     string basiccut="(y<0 || x<1)";
     string ipercut="(y<1/(x)+1 || y<0 || x<0)";
@@ -243,11 +287,16 @@ void MVA(int stamp=0)
     TCanvas *c1 = new TCanvas();
 
     //Primo taglio
-   
-    eve->Draw("y:x >> Sig2D", "s>0" && ip , "goff");
-    eve->Draw("y:x >> Eff2D", "s>0" && !ip , "goff");
-    eve->Draw("y:x >> Bkg2D", "s<1" && !ip , "goff");
-    eve->Draw("y:x >> Pur2D", "s<1" && ip , "goff");
+    eve->Draw("y:x >> Sig2D", "s>0" && ip , "");
+    eve->Draw("y:x >> Eff2D", "s>0" && !ip , "same");
+    eve->Draw("y:x >> Bkg2D", "s<1" && !ip , "same");
+    eve->Draw("y:x >> Pur2D", "s<1" && ip , "same");
+
+    TLegend* legendIP = new TLegend(); 
+
+    legendIP->AddEntry(Sig2D , "Segnale-Segnale","lp");legendIP->AddEntry(Eff2D , "Segnale-Fondo","lp");
+    legendIP->AddEntry(Bkg2D , "Fondo-Segnale","lp");legendIP->AddEntry(Pur2D , "Fondo-Fondo","lp");
+    legendIP->Draw();
 
     if (stamp==1 ||stamp==3){
     c1->SaveAs("MVA/iperbole.png");
@@ -279,16 +328,17 @@ void MVA(int stamp=0)
     cout<<"##################################################################################\n\n";
 
     //Secondo taglio
+    TCanvas* cs = new TCanvas();
 
-    eve->Draw("y:x >> Sig2D", "s>0" && snip, "");
-    eve->Draw("y:x >> Eff2D", "s>0" && !snip, "SAME");
-    eve->Draw("y:x >> Bkg2D", "s<1" && !snip, "SAME");
-    eve->Draw("y:x >> Pur2D", "s<1" && snip, "SAME");
+    eve->Draw("y:x >> Sig2DS", "s>0" && snip, "");
+    eve->Draw("y:x >> Eff2DS", "s>0" && !snip, "SAME");
+    eve->Draw("y:x >> Bkg2DS", "s<1" && !snip, "SAME");
+    eve->Draw("y:x >> Pur2DS", "s<1" && snip, "SAME");
 
     TLegend* legend = new TLegend(); 
 
-    legend->AddEntry(Sig2D , "Segnale-Segnale","lp");legend->AddEntry(Eff2D , "Segnale-Fondo","lp");
-    legend->AddEntry(Bkg2D , "Fondo-Segnale","lp");legend->AddEntry(Pur2D , "Fondo-Fondo","lp");
+    legend->AddEntry(Sig2DS , "Segnale-Segnale","lp");legend->AddEntry(Eff2DS , "Segnale-Fondo","lp");
+    legend->AddEntry(Bkg2DS , "Fondo-Segnale","lp");legend->AddEntry(Pur2DS , "Fondo-Fondo","lp");
     legend->Draw();
 
     if (stamp==1 ||stamp==3){
@@ -299,10 +349,10 @@ void MVA(int stamp=0)
 
     //calcolo purezza ed efficienza del taglio
 
-    SS = Sig2D->GetEntries();
-    SB = Eff2D->GetEntries();
-    BS = Pur2D->GetEntries();
-    BB = Bkg2D->GetEntries();
+    SS = Sig2DS->GetEntries();
+    SB = Eff2DS->GetEntries();
+    BS = Pur2DS->GetEntries();
+    BB = Bkg2DS->GetEntries();
 
     purezza = 100*(SS)/(SS+BS);
     efficienza = 100*(SS)/(SS+SB);
@@ -317,10 +367,10 @@ void MVA(int stamp=0)
     cout<<"Fondo-Fondo: "<<BB<<endl;
     cout<<"Fondo-Segnale: "<<BS<<endl;
 
-    cout <<"Purezza del Segnale Iperbole: "<<purezza<<"%"<<endl;
-    cout <<"Efficienza del Segnale Iperbole: "<<efficienza<<"%"<<endl;
-    cout <<"Reiezione del fondo Iperbole: "<<reiezione<<"%"<<endl;
-    cout <<"Significatività del taglio Iperbole: "<<Sig<<endl;
+    cout <<"Purezza del Segnale Snip: "<<purezza<<"%"<<endl;
+    cout <<"Efficienza del Segnale Snip: "<<efficienza<<"%"<<endl;
+    cout <<"Reiezione del fondo Snip: "<<reiezione<<"%"<<endl;
+    cout <<"Significatività del taglio Snip: "<<Sig<<endl;
     cout<<"##################################################################################\n";
 
 
@@ -353,11 +403,10 @@ void MVA(int stamp=0)
         TH2D *Eff2DT = new TH2D ("Eff2DT" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
         Eff2DT->GetXaxis()->SetTitle("X");Eff2DT->GetYaxis()->SetTitle("Y");Eff2DT->SetMarkerColor(kBlue);
 
-        a=6;
         int j=0;
         for(double i =1; i<=a; i=i+passo){
 
-            ellisse = (Ellisse(4, 4, i, i*0.88 , AngBkg)).c_str();
+            ellisse = (Ellisse(4, 4, i, AsseMin , AngBkg)).c_str();
 
             //cout<< (Ellisse(4, 4, a, a*(0.88))).c_str()<<endl;
 
