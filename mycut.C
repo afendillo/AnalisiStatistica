@@ -83,7 +83,7 @@ void mycut()
     
     //calcolo purezza ed efficienza del taglio
 
-    double reieizione, Sig, purezza, efficienza, SS, SB, BS, BB;
+    double reiezione, Sig, purezza, efficienza, SS, SB, BS, BB;
 
    //calcolo purezza ed efficienza del taglio
 
@@ -98,8 +98,7 @@ void mycut()
     reiezione=100*(BB)/(BB+BS);
 
     cout<<"##################################################################################\n";
-    cout<<"Taglio: "<<basiccut.c_str()<<endl;
-
+    
     cout<<"Segnale-Segnale: "<<SS<<endl;
     cout<<"Segnale-Fondo: "<<SB<<endl;
     cout<<"Fondo-Fondo: "<<BB<<endl;
