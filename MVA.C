@@ -299,8 +299,9 @@ void MVA(int stamp=0)
     legendIP->Draw();
 
     if (stamp==1 ||stamp==3){
-    c1->SaveAs("MVA/iperbole.png");
-    c1->SaveAs("MVA/iperbole.root");
+        int Cartella1= system("mkdir -p MVA");
+        c1->SaveAs("MVA/iperbole.png");
+        c1->SaveAs("MVA/iperbole.root");
     }
 
     SS = Sig2D->GetEntries();
@@ -342,9 +343,9 @@ void MVA(int stamp=0)
     legend->Draw();
 
     if (stamp==1 ||stamp==3){
-    int Cartella= system("mkdir -p MVA");
-    c1->SaveAs("MVA/snip.png");
-    c1->SaveAs("MVA/snip.root");
+        //int Cartella= system("mkdir -p MVA");
+        c1->SaveAs("MVA/snip.png");
+        c1->SaveAs("MVA/snip.root");
     }
 
     //calcolo purezza ed efficienza del taglio
