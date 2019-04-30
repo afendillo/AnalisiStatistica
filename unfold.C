@@ -1,4 +1,6 @@
-
+//Funzionamento root -l unfold.C -> fa il grafico di default con c =0.25
+//.x unfold.C(numero)->Fa il grafico con il valore di c specificato
+//.x unfold.C(Numero_Negativo)->Salva i grafici per dei valori preimpostati: 0.3 , 0.5 , 0.7 , 0.9 , 5
 const static double lambda = 420;//nm
 const static double L = 20;//cm distanza sorgente
 const static double a = 1.5*lambda;//dimensioni fenditura 
@@ -38,58 +40,103 @@ double smearing(double x, double sigma){
     return x+(r->Gaus(0 , sigma));
 }
 
-void unfold()
+string ToString(double n , int precision){
+    string i=to_string((int)n);
+    string d;
+    double decimal=(n-(int)n)*10;
+    for(int i=0; i<precision ; i++){
+        d+=to_string((int)(decimal));
+        decimal=(decimal-(int)decimal)*10;
+    }
+    return i+"."+d;
+}
+
+void unfold(double stamp = 0.25)
 {
 	Reset();
+    gSystem->Load("/opt/RooUnfold/trunk/libRooUnfold.rootmap");
+    int Cartella= system("mkdir -p UNFOLD");
 	//Informazioni statistiche da stampare
 	//gStyle->SetOptFit(1111);
-    double x, xs,sigma;
-    double c=5;
-    sigma=c*2*L/Bin;
+    double x, xs;
+    double c[5]={0.3 , 0.5 , 0.7 , 0.9 , 5.0};
+    string c_s[5]={"0.3" , "0.5", "0.7", "0.9", "5"};
+    double sigma[5]={c[0]*2*L/Bin, c[1]*2*L/Bin, c[2]*2*L/Bin, c[3]*2*L/Bin, c[4]*2*L/Bin,};
     TF1 *Diff = new TF1("Diff" , Intensita ,-L,L,0);
 
-    TH1D* shape = new TH1D("shape" , "shape" , Bin , -L , L);
-    // shape->SetFillColorAlpha(kYellow , 0.30);
-    // shape->SetFillStyle(3008);
+    int k=0 ,fine=5;
 
-    TH1D* shape_smuss = new TH1D("shape_smuss" , "shape_smuss" , Bin , -L , L);
-    shape_smuss->SetLineColor(kRed);
-    shape_smuss->SetFillColorAlpha(kYellow , 0.30);
-    shape_smuss->SetFillStyle(3004);
-
-    gSystem->Load("/opt/RooUnfold/trunk/libRooUnfold.rootmap");
-
-    RooUnfoldResponse riv (Bin , -L , L);
-
-    for(int i=0; i<Eventi; i++){
-        x=Diff->GetRandom();
-        riv.Fill(smearing(x, sigma),x);
+    if(stamp <= 0) {
+        k=0;
+        fine=5;
     }
-    
-    for(int i=0; i<Eventi; i++){
-        x=Diff->GetRandom();
-        shape->Fill(x);
-        shape_smuss->Fill(smearing(x , sigma));
-    }
-    RooUnfoldBinByBin unfold (&riv, shape_smuss);
-    //RooUnfoldBayes deconvoluzione (&riv, shape_smuss, 4);
-    TH1D* shape_reco= (TH1D*) unfold.Hreco();
-    shape_reco->SetMarkerColor(kBlack);
-    shape_reco->SetMarkerSize(0.7);
-    shape_reco->SetMarkerStyle(20);
+    else{
+        k=0;
+        fine=1;
+        sigma[0]=stamp*2*L/Bin;
+        c[0]=stamp;
 
-    gStyle->SetOptStat(0);
-    TCanvas* c1 = new TCanvas();
-    c1->SetGrid();
-    shape->Draw();
-    shape_smuss->Draw("same");
-    shape_reco->Draw("Psame");
-    
-    
+    }
+
+    for(int j=k; j<fine ; j++){
+        TH1D* shape = new TH1D(("Spettro d'intensità c:"+ToString(c[j] , 2)).c_str() , ("Spettro d'intensità c:"+ToString(c[j] , 2)).c_str() , Bin , -L , L);
+        // shape->SetFillColorAlpha(kYellow , 0.30);
+        // shape->SetFillStyle(3008);
+
+        TH1D* shape_smuss = new TH1D("shape_smuss" , "shape_smuss" , Bin , -L , L);
+        shape_smuss->SetLineColor(kRed);
+        shape_smuss->SetFillColorAlpha(kYellow , 0.30);
+        shape_smuss->SetFillStyle(3004);
+
+        TLegend* legend = new TLegend(0.1,0.7,0.4,0.9);
+
+        RooUnfoldResponse riv (Bin , -L , L);
+        for(int i=0; i<Eventi; i++){
+            x=Diff->GetRandom();
+            riv.Fill(smearing(x, sigma[j]),x);
+        }
+        
+        for(int i=0; i<Eventi; i++){
+            x=Diff->GetRandom();
+            shape->Fill(x);
+            shape_smuss->Fill(smearing(x , sigma[j]));
+        }
+        
+        RooUnfoldBinByBin unfold (&riv, shape_smuss);
+        //RooUnfoldBayes deconvoluzione (&riv, shape_smuss, 4);
+        TH1D* shape_reco= (TH1D*) unfold.Hreco();
+        shape_reco->SetMarkerColor(kBlack);
+        shape_reco->SetLineColor(kBlack);
+        shape_reco->SetMarkerSize(0.7);
+        shape_reco->SetMarkerStyle(20);
+
+        legend->AddEntry(shape_smuss , "Distrbuzione Osservata", "lp");
+        legend->AddEntry(shape_reco , "Distribuzione ricostruita" , "lp");
+        legend->AddEntry(shape , "Distribuzione vera" ,"lp");
+
+        gStyle->SetOptStat(0);
+        TCanvas* c1 = new TCanvas();
+        c1->SetGrid();
+        shape->Draw();
+        shape_smuss->Draw("same");
+        shape_reco->Draw("Psame");
+        legend->Draw();
+
+        if(stamp <=0){
+            c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".png").c_str());
+            c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".root").c_str());
+
+            delete c1;
+            delete legend;
+            delete shape_smuss;
+            delete shape_reco;
+            delete shape;
+            riv.Delete();
+            unfold.Delete();
+        }
+    }
 
 
     r->Delete();
-    riv.Delete();
-    unfold.Delete();
     return;
 }
