@@ -4,7 +4,7 @@
 
 #define NSig 2000
 #define NBack 5000
-#define bin 150
+#define bin 85
 #define A 8
 #define B 5
 #define C 3
