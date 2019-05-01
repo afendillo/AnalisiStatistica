@@ -79,7 +79,7 @@ void unfold(double stamp = 0.25)
     }
 
     for(int j=k; j<fine ; j++){
-        TH1D* shape = new TH1D(("Spettro d'intensità c:"+ToString(c[j] , 2)).c_str() , ("Spettro d'intensità c:"+ToString(c[j] , 2)).c_str() , Bin , -L , L);
+        TH1D* shape = new TH1D(("Spettro d'intensita c:"+ToString(c[j] , 2)).c_str() , ("Spettro d'intensita c:"+ToString(c[j] , 2)).c_str() , Bin , -L , L);
         // shape->SetFillColorAlpha(kYellow , 0.30);
         // shape->SetFillStyle(3008);
 
@@ -102,9 +102,9 @@ void unfold(double stamp = 0.25)
             shape_smuss->Fill(smearing(x , sigma[j]));
         }
         
-        RooUnfoldBinByBin unfold (&riv, shape_smuss);
-        //RooUnfoldBayes deconvoluzione (&riv, shape_smuss, 4);
-        TH1D* shape_reco= (TH1D*) unfold.Hreco();
+        //RooUnfoldBinByBin unfold (&riv, shape_smuss);
+        RooUnfoldBayes deconvoluzione (&riv, shape_smuss, 4);
+        TH1D* shape_reco= (TH1D*) deconvoluzione.Hreco();
         shape_reco->SetMarkerColor(kBlack);
         shape_reco->SetLineColor(kBlack);
         shape_reco->SetMarkerSize(0.7);
@@ -132,7 +132,7 @@ void unfold(double stamp = 0.25)
             delete shape_reco;
             delete shape;
             riv.Delete();
-            unfold.Delete();
+            deconvoluzione.Delete();
         }
     }
 

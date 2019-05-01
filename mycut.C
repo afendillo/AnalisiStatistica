@@ -16,7 +16,16 @@ void Reset(){
 	gROOT->DeleteAll();
 	return;
 }
-
+string ToString(double n , int precision){
+    string i=to_string((int)n);
+    string d;
+    double decimal=(n-(int)n)*10;
+    for(int i=0; i<precision ; i++){
+        d+=to_string((int)(decimal));
+        decimal=(decimal-(int)decimal)*10;
+    }
+    return i+"."+d;
+}
 void mycut()
 {
 	Reset();
@@ -49,29 +58,20 @@ void mycut()
 
     //per poter plottare gli eventi con 4 colori diversi definisco 4 TH2D
     
-    //eventi segnale-segnale -> verde
-    TH2D *Sig2D = new TH2D ("Sig2D" , "Taglio Grafico" , bin , -20 , 20 , bin , -20 , 20);
-	Sig2D->GetXaxis()->SetTitle("X");
-	Sig2D->GetYaxis()->SetTitle("Y");
-	Sig2D->SetMarkerColor(kGreen);
+    TH2D *Sig2D = new TH2D ("Sig2D" , "Iperbole" , bin , -20 , 20 , bin , -20 , 20);
+	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen+3);Sig2D->SetMarkerSize(2);Sig2D->SetLineColor(kGreen+3);
 
     //eventi background-background -> giallo
     TH2D *Bkg2D = new TH2D ("Bkg2D" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
-	Bkg2D->GetXaxis()->SetTitle("X");
-	Bkg2D->GetYaxis()->SetTitle("Y");
-	Bkg2D->SetMarkerColor(kYellow);
+	Bkg2D->GetXaxis()->SetTitle("X");Bkg2D->GetYaxis()->SetTitle("Y");Bkg2D->SetMarkerColor(kYellow);Bkg2D->SetMarkerSize(2);Bkg2D->SetLineColor(kYellow);
 
     //eventi background-segnale -> rosso
     TH2D *Pur2D = new TH2D ("Pur2D" , "Pur2D" , bin , -20 , 20 , bin , -20 , 20);
-	Pur2D->GetXaxis()->SetTitle("X");
-	Pur2D->GetYaxis()->SetTitle("Y");
-	Pur2D->SetMarkerColor(kRed);
+	Pur2D->GetXaxis()->SetTitle("X");Pur2D->GetYaxis()->SetTitle("Y");Pur2D->SetMarkerColor(kRed);Pur2D->SetMarkerSize(2);Pur2D->SetLineColor(kRed);
 
     //eventi segnale-background -> blu
     TH2D *Eff2D = new TH2D ("Eff2D" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
-	Eff2D->GetXaxis()->SetTitle("X");
-	Eff2D->GetYaxis()->SetTitle("Y");
-	Eff2D->SetMarkerColor(kBlue);
+	Eff2D->GetXaxis()->SetTitle("X");Eff2D->GetYaxis()->SetTitle("Y");Eff2D->SetMarkerColor(kBlue);Eff2D->SetMarkerSize(2);Eff2D->SetLineColor(kBlue);
 
     //disegno sullo stesso canvas gli eventi, divisi in modo opportuno rispetto al taglio
     TCanvas *c2 = new TCanvas();
@@ -80,6 +80,7 @@ void mycut()
     eve->Draw("y:x >> Eff2D", "s>0 && CUTG", "SAME");
     eve->Draw("y:x >> Bkg2D", "s<1 && CUTG", "SAME");
     eve->Draw("y:x >> Pur2D", "s<1 && !CUTG", "SAME");
+    MyCut->Draw("same");
     
     //calcolo purezza ed efficienza del taglio
 
@@ -96,6 +97,14 @@ void mycut()
     efficienza = 100*(SS)/(SS+SB);
     Sig=SS/sqrt(BS+SS);
     reiezione=100*(BB)/(BB+BS);
+
+    TLegend* legendIP = new TLegend(0.1,0.7,0.4,0.9); 
+    
+    legendIP->SetHeader(("Taglio Grafico p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+
+    legendIP->AddEntry(Sig2D , "Segnale-Segnale","lp");legendIP->AddEntry(Eff2D , "Segnale-Fondo","lp");
+    legendIP->AddEntry(Bkg2D , "Fondo-Segnale","lp");legendIP->AddEntry(Pur2D , "Fondo-Fondo","lp");
+    legendIP->Draw();
 
     cout<<"##################################################################################\n";
     

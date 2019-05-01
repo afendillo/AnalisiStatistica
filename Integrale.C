@@ -77,17 +77,17 @@ void Integrale()
 	double Result , Rmin = 0, Rmax = 0 , I ,J, IS, x , y , xS;
 	double Result2, ymin = cumul(xmin), ymax = cumul(xmax);
 
-	TH1D *HistoInt = new TH1D ("HistoInt" , "Uniforme" , bin ,Rmin, Rmax);
+	TH1D *HistoInt = new TH1D ("Uniforme" , "Uniforme" , bin ,Rmin, Rmax);
 	HistoInt->GetXaxis()->SetTitle("Area");
 	HistoInt->GetYaxis()->SetTitle("Conteggi");
 	HistoInt->SetFillColorAlpha(kGreen, 0.30);
 
-	TH1D *HistoInt2 = new TH1D ("HistoInt2" , "Cubica" , bin ,Rmin, Rmax);
+	TH1D *HistoInt2 = new TH1D ("Importance Sampling: Cubica" , "Importance Sampling: Cubica" , bin ,Rmin, Rmax);
 	HistoInt2->GetXaxis()->SetTitle("Area");
 	HistoInt2->GetYaxis()->SetTitle("Conteggi");
 	HistoInt2->SetFillColorAlpha(kGreen, 0.30);
 
-	TH1D *HistoInt3 = new TH1D ("HistoInt3" , "Samplig Stratificato" , bin ,Rmin, Rmax);
+	TH1D *HistoInt3 = new TH1D ("Samplig Stratificato" , "Samplig Stratificato" , bin ,Rmin, Rmax);
 	HistoInt3->GetXaxis()->SetTitle("Area");
 	HistoInt3->GetYaxis()->SetTitle("Conteggi");
 	HistoInt3->SetFillColorAlpha(kGreen, 0.30);
@@ -147,6 +147,14 @@ void Integrale()
 	HistoInt3->Draw();
 	HistoInt3->Fit("f" , "Q");
 
+	int Cartella= system("mkdir -p integrale");
+
+	c1->SaveAs("integrale/uniforme.png");
+	c1->SaveAs("integrale/uniforme.root");
+	c2->SaveAs("integrale/cubica.png");
+	c2->SaveAs("integrale/cubica.root");
+	c3->SaveAs("integrale/stratificato.png");
+	c3->SaveAs("integrale/stratificato.root");
 	return;	
 }
 
