@@ -22,7 +22,7 @@ void mycut()
 	Reset();
 	//Informazioni statistiche da stampare
 	//gStyle->SetOptFit(1111);
-
+    gStyle->SetOptStat(0);
     double PlotRun;
 
     TFile* MyFile = new TFile("MVA.root");
@@ -50,7 +50,7 @@ void mycut()
     //per poter plottare gli eventi con 4 colori diversi definisco 4 TH2D
     
     //eventi segnale-segnale -> verde
-    TH2D *Sig2D = new TH2D ("Sig2D" , "Plot Run" , bin , -20 , 20 , bin , -20 , 20);
+    TH2D *Sig2D = new TH2D ("Sig2D" , "Taglio Grafico" , bin , -20 , 20 , bin , -20 , 20);
 	Sig2D->GetXaxis()->SetTitle("X");
 	Sig2D->GetYaxis()->SetTitle("Y");
 	Sig2D->SetMarkerColor(kGreen);
@@ -104,10 +104,10 @@ void mycut()
     cout<<"Fondo-Fondo: "<<BB<<endl;
     cout<<"Fondo-Segnale: "<<BS<<endl;
 
-    cout <<"Purezza del Segnale Iperbole: "<<purezza<<"%"<<endl;
-    cout <<"Efficienza del Segnale Iperbole: "<<efficienza<<"%"<<endl;
-    cout <<"Reiezione del fondo Iperbole: "<<reiezione<<"%"<<endl;
-    cout <<"Significatività del taglio Iperbole: "<<Sig<<endl;
+    cout <<"Purezza del Segnale Taglio Grafico: "<<purezza<<"%"<<endl;
+    cout <<"Efficienza del Segnale Taglio Grafico: "<<efficienza<<"%"<<endl;
+    cout <<"Reiezione del fondo Taglio Grafico: "<<reiezione<<"%"<<endl;
+    cout <<"Significatività del taglio Taglio Grafico: "<<Sig<<endl;
     cout<<"##################################################################################\n";
  
     return;
