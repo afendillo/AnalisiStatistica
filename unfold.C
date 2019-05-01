@@ -79,7 +79,8 @@ void unfold(double stamp = 0.25)
     }
 
     for(int j=k; j<fine ; j++){
-        TH1D* shape = new TH1D(("Spettro d'intensita c:"+ToString(c[j] , 2)).c_str() , ("Spettro d'intensita c:"+ToString(c[j] , 2)).c_str() , Bin , -L , L);
+        TH1D* shape = new TH1D(("Spettro c :"+ToString(c[j] , 2)).c_str() , ("Spettro c :"+ToString(c[j] , 2)).c_str() , Bin , -L , L);
+        shape->GetXaxis()->SetTitle("I");shape->GetYaxis()->SetTitle("Conteggi");
         // shape->SetFillColorAlpha(kYellow , 0.30);
         // shape->SetFillStyle(3008);
 
@@ -103,15 +104,33 @@ void unfold(double stamp = 0.25)
         }
         
         //RooUnfoldBinByBin unfold (&riv, shape_smuss);
-        RooUnfoldBayes deconvoluzione (&riv, shape_smuss, 4);
-        TH1D* shape_reco= (TH1D*) deconvoluzione.Hreco();
+        //RooUnfoldBayes unfold (&riv, shape_smuss, 4);
+        RooUnfoldSvd unfold (&riv, shape_smuss, Bin);
+        TH1D* shape_reco= (TH1D*) unfold.Hreco();
         shape_reco->SetMarkerColor(kBlack);
         shape_reco->SetLineColor(kBlack);
         shape_reco->SetMarkerSize(0.7);
         shape_reco->SetMarkerStyle(20);
 
+        double chi=0, ev1, ev2, sigma1, sigma2;
+
+        for(int i =1; i<=shape_reco->GetNbinsX(); i++){
+            ev1=shape->GetBinContent(i);
+            sigma1=shape->GetBinError(i);
+
+            ev2=shape_reco->GetBinContent(i);
+            sigma2=shape_reco->GetBinError(i);
+
+            //cout<<ev1<<" "<<ev2<<" "<<sigma1<<" "<<sigma2<<endl;
+
+            if(sigma1>0 || sigma2>0) chi+=pow(ev1-ev2 , 2)/(sigma1*sigma1+sigma2*sigma2);
+
+        }
+
+        cout<<"Chi^2 :"<<chi<<endl;
+
         legend->AddEntry(shape_smuss , "Distrbuzione Osservata", "lp");
-        legend->AddEntry(shape_reco , "Distribuzione ricostruita" , "lp");
+        legend->AddEntry(shape_reco , "Distribuzione ricostruita" , "lpF");
         legend->AddEntry(shape , "Distribuzione vera" ,"lp");
 
         gStyle->SetOptStat(0);
@@ -132,7 +151,7 @@ void unfold(double stamp = 0.25)
             delete shape_reco;
             delete shape;
             riv.Delete();
-            deconvoluzione.Delete();
+            unfold.Delete();
         }
     }
 
