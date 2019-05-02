@@ -106,13 +106,15 @@ void unfold(double stamp = 0.25)
         }
         
         //RooUnfoldBinByBin unfold (&riv, shape_smuss);
-        //RooUnfoldBayes unfold (&riv, shape_smuss, 4);
-        RooUnfoldSvd unfold (&riv, shape_smuss, 10);
+        RooUnfoldBayes unfold (&riv, shape_smuss, 4);
+        //RooUnfoldSvd unfold (&riv, shape_smuss, 21);
         TH1D* shape_reco= (TH1D*) unfold.Hreco();
         shape_reco->SetMarkerColor(kBlack);
         shape_reco->SetLineColor(kBlack);
         shape_reco->SetMarkerSize(0.7);
         shape_reco->SetMarkerStyle(20);
+
+
 
         double chi=0, ev1, ev2, sigma1, sigma2;
 
@@ -143,6 +145,9 @@ void unfold(double stamp = 0.25)
         shape_reco->Draw("Psame");
         legend->Draw();
 
+        TCanvas* c2 = new TCanvas();
+        c2->SetGrid();
+        unfold.Ereco().Draw("colz");
         if(stamp <=0){
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".png").c_str());
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".root").c_str());
