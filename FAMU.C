@@ -393,15 +393,18 @@ void FAMU(int stamp=0){
 
     TCanvas* c1 = new TCanvas("Distribuzione #phi", "Distribuzione #phi");
     c1->SetGrid();
+    c1->SetWindowSize(1500 , 780);
     HPhi->GetYaxis()->SetRangeUser(0 , HPhi->GetBinContent(HPhi->GetMaximumBin())*1.2);
     HPhi->Draw();
 
     TCanvas* c2 = new TCanvas("Distribuzione Posizione piano 1" , "Distribuzione Posizione piano 1");
     c2->SetGrid();
+    c2->SetWindowSize(1500 , 780);
     HPos1->Draw("COLZ text");
 
     TCanvas* c3 = new TCanvas("Distribuzione Posizione piano 2" , "Distribuzione Posizione piano 2");
     c3->SetGrid();
+    c3->SetWindowSize(1500 , 780);
     HPos2->Draw("COLZ text");
 
     h1[0]->SetTitle("Primo piano");
@@ -412,6 +415,7 @@ void FAMU(int stamp=0){
 
     TCanvas* c4= new TCanvas("Primo Piano" , "Primo Piano");
     c4->SetGrid();
+    c4->SetWindowSize(1500 , 780);
     c4-> SetLogy();
     h1[0]->GetYaxis()->SetRangeUser(m1/10 , M1*2);
     //h1[0]->SetStats(0);
@@ -420,6 +424,7 @@ void FAMU(int stamp=0){
 
     TCanvas* c5 = new TCanvas("Secondo Piano" , "Secondo Piano");
     c5->SetGrid();
+    c5->SetWindowSize(1500 , 780);
     c5-> SetLogy();
     h2[0]->GetYaxis()->SetRangeUser(m2/10 , M2*2);
     //h2[0]->SetStats(0);
