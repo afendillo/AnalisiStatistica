@@ -280,8 +280,8 @@ void FAMU(int stamp=0){
     segnale sig, sig2;
 
     TH1D* Htheta = new TH1D("Theta" , "Theta", 30  , Pi/2 ,Pi);
-    Htheta->GetXaxis()->SetTitle("#vartheta");
-    Htheta->GetYaxis()->SetTitle("Conteggi");
+    Htheta->GetXaxis()->SetTitle("#phi");Htheta->GetXaxis()->SetTitleSize(0.055);Htheta->GetXaxis()->SetTitleOffset(0.7);
+    Htheta->GetYaxis()->SetTitle("Conteggi");Htheta->GetYaxis()->SetTitleSize(0.055);Htheta->GetYaxis()->SetTitleOffset(0.85);
 
     double Gain[3] = {5*1e6 , 1e6 , 5*1e5};
     double Eff[2] = {0.5 , 0.3};
@@ -293,14 +293,18 @@ void FAMU(int stamp=0){
 
     
     TH1D* HPhi = new TH1D("Phi" , "Phi", 100  , 0 ,2*Pi);
-    HPhi->GetXaxis()->SetTitle("#phi");
-    HPhi->GetYaxis()->SetTitle("Conteggi");
+    HPhi->GetXaxis()->SetTitle("#phi");HPhi->GetXaxis()->SetTitleSize(0.055);HPhi->GetXaxis()->SetTitleOffset(0.7);
+    HPhi->GetYaxis()->SetTitle("Conteggi");HPhi->GetYaxis()->SetTitleSize(0.055);HPhi->GetYaxis()->SetTitleOffset(0.85);
 
     TH2D* HPos1 = new TH2D("Pos1" , "Pos1", 20  , 0,NFibre*spessore, 20 ,0 ,lunghezza);
-    HPos1->SetTitle("Distribuzione Piano 1 (x,y); X; Y; Conteggi ");
+    HPos1->SetTitle("Distribuzione Piano 1 (x,y); X; Y; Conteggi ");HPos1->SetTitleSize(50);
+    HPos1->GetXaxis()->SetTitleSize(0.055);HPos1->GetXaxis()->SetTitleOffset(0.7);
+    HPos1->GetYaxis()->SetTitleSize(0.055);HPos1->GetYaxis()->SetTitleOffset(0.7);
 
     TH2D* HPos2 = new TH2D("Pos2" , "Pos2", 20  , 0, lunghezza, 20 ,0 , NFibre*spessore);
-    HPos2->SetTitle("Distribuzione Piano 2 (x,y); X; Y; Conteggi ");
+    HPos2->SetTitle("Distribuzione Piano 2 (x,y); X; Y; Conteggi ");HPos2->SetTitleSize(50);
+    HPos2->GetXaxis()->SetTitleSize(0.055);HPos2->GetXaxis()->SetTitleOffset(0.7);
+    HPos2->GetYaxis()->SetTitleSize(0.055);HPos2->GetYaxis()->SetTitleOffset(0.7);
 
     double xl=0.65 , yl=0.13;
 	
@@ -316,14 +320,16 @@ void FAMU(int stamp=0){
         for(int k=0 ; k<2;k++){
             hc++;
             h1[hc]=new TH1D( ("Primo Piano " +nameG[j]+nameE[k]).c_str(),("Primo Piano " +nameG[j]+nameE[k]).c_str(), NFibre  ,0.5 ,NFibre+0.5);
-            h1[hc]->GetXaxis()->SetTitle("# fibra");
-            h1[hc]->GetYaxis()->SetTitle("carica");
+            h1[hc]->SetTitleSize(50);
+            h1[hc]->GetXaxis()->SetTitle("# fibra");h1[hc]->GetXaxis()->SetTitleSize(0.055);h1[hc]->GetXaxis()->SetTitleOffset(0.7);
+            h1[hc]->GetYaxis()->SetTitle("carica");h1[hc]->GetYaxis()->SetTitleSize(0.055);h1[hc]->GetYaxis()->SetTitleOffset(0.7);
             h1[hc]->SetLineColor(j+2);
             h1[hc]->SetLineStyle(k+1);
 
             h2[hc]=new TH1D( ("Secondo Piano " +nameG[j]+nameE[k]).c_str(),("Secondo Piano " +nameG[j]+nameE[k]).c_str(), NFibre  ,0.5 ,NFibre+0.5);
-            h2[hc]->GetXaxis()->SetTitle("# fibra");
-            h2[hc]->GetYaxis()->SetTitle("carica");  
+            h2[hc]->SetTitleSize(50);
+            h2[hc]->GetXaxis()->SetTitle("# fibra");h2[hc]->GetXaxis()->SetTitleSize(0.055);h2[hc]->GetXaxis()->SetTitleOffset(0.7);
+            h2[hc]->GetYaxis()->SetTitle("carica");h2[hc]->GetYaxis()->SetTitleSize(0.055);h2[hc]->GetYaxis()->SetTitleOffset(0.7);
             h2[hc]->SetLineColor(j+2);
             h2[hc]->SetLineStyle(k+1);
 
@@ -388,23 +394,21 @@ void FAMU(int stamp=0){
 
     TCanvas* c = new TCanvas("Distribuzione #theta" , "Distribuzione #theta");
     c->SetGrid();
-    c->SetWindowSize(1500 , 780);
+    //c->SetWindowSize(1500 , 780);
     Htheta->Draw();
 
     TCanvas* c1 = new TCanvas("Distribuzione #phi", "Distribuzione #phi");
     c1->SetGrid();
-    c1->SetWindowSize(1500 , 780);
+    //c1->SetWindowSize(1500 , 780);
     HPhi->GetYaxis()->SetRangeUser(0 , HPhi->GetBinContent(HPhi->GetMaximumBin())*1.2);
     HPhi->Draw();
 
     TCanvas* c2 = new TCanvas("Distribuzione Posizione piano 1" , "Distribuzione Posizione piano 1");
     c2->SetGrid();
-    c2->SetWindowSize(1500 , 780);
     HPos1->Draw("COLZ text");
 
     TCanvas* c3 = new TCanvas("Distribuzione Posizione piano 2" , "Distribuzione Posizione piano 2");
     c3->SetGrid();
-    c3->SetWindowSize(1500 , 780);
     HPos2->Draw("COLZ text");
 
     h1[0]->SetTitle("Primo piano");
@@ -415,7 +419,6 @@ void FAMU(int stamp=0){
 
     TCanvas* c4= new TCanvas("Primo Piano" , "Primo Piano");
     c4->SetGrid();
-    c4->SetWindowSize(1500 , 780);
     c4-> SetLogy();
     h1[0]->GetYaxis()->SetRangeUser(m1/10 , M1*2);
     //h1[0]->SetStats(0);
@@ -424,7 +427,6 @@ void FAMU(int stamp=0){
 
     TCanvas* c5 = new TCanvas("Secondo Piano" , "Secondo Piano");
     c5->SetGrid();
-    c5->SetWindowSize(1500 , 780);
     c5-> SetLogy();
     h2[0]->GetYaxis()->SetRangeUser(m2/10 , M2*2);
     //h2[0]->SetStats(0);

@@ -57,8 +57,9 @@ double cFunc(double x) {
 							
 }	
 
-void KSBreitROOT(char stamp='Q')
+void KSBreitROOT(int stamp=1)
 {	
+	int Cartella= system("mkdir -p BreitGraph");
 	Reset();
 	
 	//Informazioni statistiche da stampare
@@ -215,10 +216,30 @@ void KSBreitROOT(char stamp='Q')
 	
 	TCanvas *test = new TCanvas();
 	test->SetGrid();
+	test->SetWindowSize(1500 , 780);
 
 	BreitHisto->Draw();
 
 	BreitHisto->Fit("breit" , "Q");
+
+
+	if(stamp==1){
+	CasTest1D->SaveAs("BreitGraph/test1D.png");
+	CasTest2D->SaveAs("BreitGraph/test2D.png");
+	CasTest3D->SaveAs("BreitGraph/test3D.png");
+	test->SaveAs("BreitGraph/breitZ.png");
+
+	CasTest1D->SaveAs("BreitGraph/test1D.pdf");
+	CasTest2D->SaveAs("BreitGraph/test2D.pdf");
+	CasTest3D->SaveAs("BreitGraph/test3D.pdf");
+	test->SaveAs("BreitGraph/breitZ.pdf");
+
+	CasTest1D->SaveAs("BreitGraph/test1D.root");
+	CasTest2D->SaveAs("BreitGraph/test2D.root");
+	CasTest3D->SaveAs("BreitGraph/test3D.root");
+	test->SaveAs("BreitGraph/breitZ.root");
+
+	}
 	return;	
 }
 

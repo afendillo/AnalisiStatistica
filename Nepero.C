@@ -305,6 +305,9 @@ void Nepero()
 	c1->SetGrid();
 	c1 -> SetLogy();
 	mg->Draw("apc");
+	//mg->SetTitleSize(50);
+	mg->GetXaxis()->SetTitleSize(0.055);mg->GetXaxis()->SetTitleOffset(0.7);
+  mg->GetYaxis()->SetTitleSize(0.055);mg->GetYaxis()->SetTitleOffset(0.85);
 	legend->Draw();
 	// gr2->Draw("pc same");
 	// gr3->Draw("pc same");
