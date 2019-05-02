@@ -27,17 +27,17 @@ double poly (double x) {
 
 //Trial distribution
 double trial (double x) {
-	return  x*x*x*4;
+	return  x*x*x*x*x*6;
 }
 
 //Cumulante
 double cumul (double x) {
-	return x*x*x*x;
+	return x*x*x*x*x*x;
 }
 
 //Cumulante invertita
 double lumuc (double x) {
-	return pow(x, 1./4.);
+	return pow(x, 1./6.);
 }
 
 //Constant PDFunction a-b interval
@@ -69,8 +69,13 @@ double cFunc(double x) {
 // }
 void Integrale()
 {	
+	
 	Reset();
 	gStyle->SetOptFit(1111);
+	gStyle->SetStatX(0.9);
+    gStyle->SetStatY(0.9);
+    gStyle->SetStatW(0.16);// Set width of stat-box (fraction of pad size)
+    gStyle->SetStatH(0.14);// Set height of stat-box (fraction of pad size)
 //metodo 1
 
 	TRandom3 *RandGenerator = new TRandom3(time(0));
@@ -82,12 +87,12 @@ void Integrale()
 	HistoInt->GetYaxis()->SetTitle("Conteggi");
 	HistoInt->SetFillColorAlpha(kGreen, 0.30);
 
-	TH1D *HistoInt2 = new TH1D ("Importance Sampling: Cubica" , "Importance Sampling: Cubica" , bin ,Rmin, Rmax);
+	TH1D *HistoInt2 = new TH1D ("Importance Sampling: Quinta" , "Importance Sampling: Quinta" , bin ,Rmin, Rmax);
 	HistoInt2->GetXaxis()->SetTitle("Area");
 	HistoInt2->GetYaxis()->SetTitle("Conteggi");
 	HistoInt2->SetFillColorAlpha(kGreen, 0.30);
 
-	TH1D *HistoInt3 = new TH1D ("Samplig Stratificato" , "Samplig Stratificato" , bin ,Rmin, Rmax);
+	TH1D *HistoInt3 = new TH1D ("Sampling Stratificato" , "Sampling Stratificato" , bin ,Rmin, Rmax);
 	HistoInt3->GetXaxis()->SetTitle("Area");
 	HistoInt3->GetYaxis()->SetTitle("Conteggi");
 	HistoInt3->SetFillColorAlpha(kGreen, 0.30);
@@ -150,10 +155,13 @@ void Integrale()
 	int Cartella= system("mkdir -p integrale");
 
 	c1->SaveAs("integrale/uniforme.png");
+	c1->SaveAs("integrale/uniforme.pdf");
 	c1->SaveAs("integrale/uniforme.root");
 	c2->SaveAs("integrale/cubica.png");
+	c2->SaveAs("integrale/cubica.pdf");
 	c2->SaveAs("integrale/cubica.root");
 	c3->SaveAs("integrale/stratificato.png");
+	c3->SaveAs("integrale/stratificato.pdf");
 	c3->SaveAs("integrale/stratificato.root");
 	return;	
 }
