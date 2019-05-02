@@ -234,6 +234,7 @@ void FitMethods(int stamp=0)
 
 	if(stamp==1){
 		LS->SaveAs("FitMethods/LeastSquare.png");
+		LS->SaveAs("FitMethods/LeastSquare.pdf");
 		LS->SaveAs("FitMethods/LeastSquare.root");
 	}
 
@@ -258,6 +259,7 @@ void FitMethods(int stamp=0)
 
 	if(stamp==1){
 		LSF->SaveAs("FitMethods/LeastSquareFixed.png");
+		LSF->SaveAs("FitMethods/LeastSquareFixed.pdf");
 		LSF->SaveAs("FitMethods/LeastSquareFixed.root");
 	}
 	
@@ -282,6 +284,7 @@ void FitMethods(int stamp=0)
 
 	if(stamp==1){
 		MLS->SaveAs("FitMethods/ModifiedLeastSquare.png");
+		MLS->SaveAs("FitMethods/ModifiedLeastSquare.pdf");
 		MLS->SaveAs("FitMethods/ModifiedLeastSquare.root");
 	}
 
@@ -306,6 +309,7 @@ void FitMethods(int stamp=0)
 	
 	if(stamp==1){
 		MLSF->SaveAs("FitMethods/ModifiedLeastSquareFixed.png");
+		MLSF->SaveAs("FitMethods/ModifiedLeastSquareFixed.pdf");
 		MLSF->SaveAs("FitMethods/ModifiedLeastSquareFixed.root");
 	}
 
@@ -330,6 +334,7 @@ void FitMethods(int stamp=0)
 
 	if(stamp==1){
 		ML->SaveAs("FitMethods/MaximumLikelihood.png");
+		ML->SaveAs("FitMethods/MaximumLikelihood.pdf");
 		ML->SaveAs("FitMethods/MaximumLikelihood.root");
 		}
 	cout<<"Press enter to quit:\n";

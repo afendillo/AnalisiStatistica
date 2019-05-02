@@ -388,6 +388,7 @@ void FAMU(int stamp=0){
 
     TCanvas* c = new TCanvas("Distribuzione #theta" , "Distribuzione #theta");
     c->SetGrid();
+    c->SetWindowSize(1500 , 780);
     Htheta->Draw();
 
     TCanvas* c1 = new TCanvas("Distribuzione #phi", "Distribuzione #phi");
@@ -413,7 +414,7 @@ void FAMU(int stamp=0){
     c4->SetGrid();
     c4-> SetLogy();
     h1[0]->GetYaxis()->SetRangeUser(m1/10 , M1*2);
-    h1[0]->SetStats(0);
+    //h1[0]->SetStats(0);
     for(int i=0; i<6; i++) h1[i]->Draw("HIST same");
     legend->Draw();
 
@@ -421,28 +422,34 @@ void FAMU(int stamp=0){
     c5->SetGrid();
     c5-> SetLogy();
     h2[0]->GetYaxis()->SetRangeUser(m2/10 , M2*2);
-    h2[0]->SetStats(0);
+    //h2[0]->SetStats(0);
     for(int i=0; i<6; i++) h2[i]->Draw("HIST same");
     legend2->Draw();
 
     if(stamp==1){
         int Cartella= system("mkdir -p FAMU");
         c->SaveAs("FAMU/theta.png");
+        c->SaveAs("FAMU/theta.pdf");
         c->SaveAs("FAMU/theta.root");
 
         c1->SaveAs("FAMU/phi.png");
+        c1->SaveAs("FAMU/phi.pdf");
         c1->SaveAs("FAMU/phi.root");
         
         c2->SaveAs("FAMU/p1.png");
+        c2->SaveAs("FAMU/p1.pdf");
         c2->SaveAs("FAMU/p1.root");
         
         c3->SaveAs("FAMU/p2.png");
+        c3->SaveAs("FAMU/p2.pdf");
         c3->SaveAs("FAMU/p2.root");
         
         c4->SaveAs("FAMU/qp1.png");
+        c4->SaveAs("FAMU/qp1.pdf");
         c4->SaveAs("FAMU/qp1.root");
         
         c5->SaveAs("FAMU/qp2.png");
+        c5->SaveAs("FAMU/qp2.pdf");
         c5->SaveAs("FAMU/qp2.root");
     }
 
