@@ -377,9 +377,9 @@ void MVA(int stamp=0)
 
     if (stamp==1 ||stamp==3){
         //int Cartella= system("mkdir -p MVA");
-        c1->SaveAs("MVA/snip.png");
-        c1->SaveAs("MVA/snip.root");
-        c1->SaveAs("MVA/snip.pdf");
+        cs->SaveAs("MVA/snip.png");
+        cs->SaveAs("MVA/snip.root");
+        cs->SaveAs("MVA/snip.pdf");
     }
 
     cout<<"##################################################################################\n";
