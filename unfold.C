@@ -80,7 +80,9 @@ void unfold(double stamp = 0.25)
 
     for(int j=k; j<fine ; j++){
         TH1D* shape = new TH1D(("Spettro c :"+ToString(c[j] , 2)).c_str() , ("Spettro c :"+ToString(c[j] , 2)).c_str() , Bin , -L , L);
-        shape->GetXaxis()->SetTitle("I");shape->GetYaxis()->SetTitle("Conteggi");
+        shape->SetTitleSize(50);
+        shape->GetXaxis()->SetTitle("I");shape->GetXaxis()->SetTitleSize(0.055);shape->GetXaxis()->SetTitleOffset(0.7);
+        shape->GetYaxis()->SetTitle("Conteggi");shape->GetYaxis()->SetTitleSize(0.055);shape->GetYaxis()->SetTitleOffset(0.85);
         // shape->SetFillColorAlpha(kYellow , 0.30);
         // shape->SetFillStyle(3008);
 
@@ -105,7 +107,7 @@ void unfold(double stamp = 0.25)
         
         //RooUnfoldBinByBin unfold (&riv, shape_smuss);
         //RooUnfoldBayes unfold (&riv, shape_smuss, 4);
-        RooUnfoldSvd unfold (&riv, shape_smuss, Bin);
+        RooUnfoldSvd unfold (&riv, shape_smuss, 10);
         TH1D* shape_reco= (TH1D*) unfold.Hreco();
         shape_reco->SetMarkerColor(kBlack);
         shape_reco->SetLineColor(kBlack);
@@ -144,6 +146,7 @@ void unfold(double stamp = 0.25)
         if(stamp <=0){
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".png").c_str());
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".root").c_str());
+            c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".pdf").c_str());
 
             delete c1;
             delete legend;

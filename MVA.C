@@ -330,6 +330,7 @@ void MVA(int stamp=0)
         int Cartella1= system("mkdir -p MVA");
         c1->SaveAs("MVA/iperbole.png");
         c1->SaveAs("MVA/iperbole.root");
+        c1->SaveAs("MVA/iperbole.pdf");
     }
 
     cout<<"##################################################################################\n";
@@ -378,6 +379,7 @@ void MVA(int stamp=0)
         //int Cartella= system("mkdir -p MVA");
         c1->SaveAs("MVA/snip.png");
         c1->SaveAs("MVA/snip.root");
+        c1->SaveAs("MVA/snip.pdf");
     }
 
     cout<<"##################################################################################\n";
@@ -467,6 +469,7 @@ void MVA(int stamp=0)
         gPad->AddExec("ex" , "Click(events)");
         if(stamp==1){
             c_prova->SaveAs("MVA/Roc.png");
+            c_prova->SaveAs("MVA/Roc.pdf");
             // c_prova->SaveAs("MVA/Roc.root");//La funzione di click fa macello se salvi il .root
         }
     }
@@ -499,8 +502,10 @@ void MVA(int stamp=0)
     if (stamp==1 ||stamp==3){
         c2->SaveAs("MVA/AllEv.png");
         c2->SaveAs("MVA/AllEv.root");
+        c2->SaveAs("MVA/AllEv.pdf");
         c3->SaveAs("MVA/Proizione.png");
         c3->SaveAs("MVA/Proiezione.root");
+        c3->SaveAs("MVA/Proiezione.pdf");
 
     }
     //MyFile->Close();
