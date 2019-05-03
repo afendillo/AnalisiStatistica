@@ -202,7 +202,7 @@ void MVA(int stamp=0)
     TNtuple *eve = new TNtuple("events", "events", "x:y:s"); //ebbene si, usiamo le NTuple
     
     //Usare superSeed per far funzionare tutto
-    TRandom3 *Rand = new TRandom3(time(0)); 
+    TRandom3 *Rand = new TRandom3(1); 
 
     double x, y; 
     double reiezione, Sig ,purezza, efficienza, SS, SB, BS, BB;
@@ -407,6 +407,10 @@ void MVA(int stamp=0)
         TGraph* fondo = new TGraph();
         fondo->SetMarkerStyle(kPlus);
         fondo->SetLineColor(kBlue);
+
+        TGraph* pur = new TGraph();
+        pur->SetMarkerStyle(kOpenSquare);
+        pur->SetLineColor(kGreen);
         TCut ellisse;
 
         TMultiGraph* mg = new TMultiGraph();
@@ -448,19 +452,21 @@ void MVA(int stamp=0)
             Sig=SS/sqrt(BS+SS);
             reiezione=100*(BB)/(BB+BS);
 
-            cout<<j+1<<") "<<"Efficienza= "<<efficienza<<" , Reiezione="<<reiezione<<" , Asse: "<<i<<" , Significatività: "<<Sig<<endl;
+            cout<<j+1<<") Purezza= "<<purezza<<" Efficienza= "<<efficienza<<" , Reiezione="<<reiezione<<" , Asse: "<<i<<" , Significatività: "<<Sig<<endl;
 
             segnale->SetPoint(j,i , efficienza/100);
             fondo->SetPoint(j,i , reiezione/100);
+            pur->SetPoint(j,i , purezza/100);
             j++;
 
         }
         TLegend* legendg = new TLegend(); 
-        legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");
+        legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");legendg->AddEntry(pur , "Purezza Fondo","lp");
 
         TCanvas* c_prova = new TCanvas();
         mg->Add(segnale);
         mg->Add(fondo);
+        mg->Add(pur);
         mg->SetTitle("Roc; SemiAsse; Efficienza");
 
         c_prova->SetGrid();

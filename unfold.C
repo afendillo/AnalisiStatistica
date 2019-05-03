@@ -60,7 +60,7 @@ void unfold(double stamp = 0.25)
 	//gStyle->SetOptFit(1111);
     double x, xs;
     double c[5]={0.3 , 0.5 , 0.7 , 0.9 , 5.0};
-    string c_s[5]={"0.3" , "0.5", "0.7", "0.9", "5"};
+    string c_s[5]={"0_3" , "0_5", "0_7", "0_9", "5"};
     double sigma[5]={c[0]*2*L/Bin, c[1]*2*L/Bin, c[2]*2*L/Bin, c[3]*2*L/Bin, c[4]*2*L/Bin,};
     TF1 *Diff = new TF1("Diff" , Intensita ,-L,L,0);
 
@@ -153,7 +153,12 @@ void unfold(double stamp = 0.25)
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".root").c_str());
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".pdf").c_str());
 
+            c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".png").c_str());
+            c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".root").c_str());
+            c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".pdf").c_str());
+
             delete c1;
+            delete c2;
             delete legend;
             delete shape_smuss;
             delete shape_reco;
