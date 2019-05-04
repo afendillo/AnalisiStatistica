@@ -11,6 +11,7 @@ const static double AngBkg=47;//21.7749;//gradi
 const static double AsseMin=3.05;//21.7749;//gradi
 static double a=5, passo = (a-1)/25, init=1+passo;
 static long superSeed=time(0);
+static int STAMP = 0;
 using namespace std;
 void Reset(){
 	//Recupera la lista di tutti i canvas e li cancella
@@ -146,13 +147,16 @@ void Click(TNtuple* ev)
         reiezione=100*(BB)/(BB+BS);
 
         TLegend* legend = new TLegend(0.1,0.7,0.4,0.9); 
+        legend->SetTextSize(0.026);
+        legend->SetTextFont(42);
 
-        legend->SetHeader(("Ellisse p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+        legend->SetHeader(("Ellisse #varepsilon: "+ToString(efficienza , 1)+"% p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+        
 
         legend->AddEntry(Sig2Dt , "Segnale-Segnale","lp");
         legend->AddEntry(Eff2Dt , "Segnale-Fondo","lp");
-        legend->AddEntry(Bkg2Dt , "Fondo-Segnale","lp");
-        legend->AddEntry(Pur2Dt , "Fondo-Fondo","lp");
+        legend->AddEntry(Pur2Dt , "Fondo-Segnale","lp");
+        legend->AddEntry(Bkg2Dt , "Fondo-Fondo","lp");
 
         gStyle->SetOptStat(0);
         
@@ -180,12 +184,24 @@ void Click(TNtuple* ev)
         cout <<"Significatività del taglio: "<<Sig<<endl;
         cout<<"##################################################################################\n";    
 
-        TCanvas* cp = new TCanvas();
-        cp->Divide(2 , 1);
-        cp->cd(1);
+        TCanvas* cp1 = new TCanvas();
         AllX->Draw();
-        cp->cd(2);
+        TCanvas* cp2 = new TCanvas();
         AllY->Draw();
+
+        if(STAMP==1){
+            c_temp->SaveAs("MVA/ellisse.pdf");
+            c_temp->SaveAs("MVA/ellisse.png");
+            c_temp->SaveAs("MVA/ellisse.root");
+
+            cp1->SaveAs("MVA/ellisseProiezioneX.pdf");
+            cp1->SaveAs("MVA/ellisseProiezioneX.png");
+            cp1->SaveAs("MVA/ellisseProiezioneX.root");
+
+            cp2->SaveAs("MVA/ellisseProiezioneY.pdf");
+            cp2->SaveAs("MVA/ellisseProiezioneY.png");
+            cp2->SaveAs("MVA/ellisseProiezioneY.root");
+        }
         
         return;
     }
@@ -198,6 +214,7 @@ void MVA(int stamp=0)
     gStyle->SetOptStat(0);
 	//Informazioni statistiche da stampare
 	//gStyle->SetOptFit(1111)
+    STAMP=stamp;
 
     TNtuple *eve = new TNtuple("events", "events", "x:y:s"); //ebbene si, usiamo le NTuple
     
@@ -291,6 +308,19 @@ void MVA(int stamp=0)
 	Eff2DS->GetXaxis()->SetTitle("X");Eff2DS->GetYaxis()->SetTitle("Y");Eff2DS->SetMarkerColor(kBlue);Eff2DS->SetMarkerSize(2);Eff2DS->SetLineColor(kBlue);
 
     //#################################################################################################################################################
+
+    TH1D *EventiXIP = new TH1D ("EventiXIP" , "Iperbole Proiezione x" , bin , -10 , 10);
+	EventiXIP->GetXaxis()->SetTitle("X");EventiXIP->GetYaxis()->SetTitle("Conteggi");
+
+    TH1D *EventiYIP = new TH1D ("EventiYIP" , "Iperbole Proiezione y" , bin , -10 , 10);
+	EventiYIP->GetXaxis()->SetTitle("Y");EventiYIP->GetYaxis()->SetTitle("Conteggi");
+
+    TH1D *EventiXSnip = new TH1D ("EventiXSnip" , "Taglio Semplice Proiezione x" , bin , -10 , 10);
+	EventiXSnip->GetXaxis()->SetTitle("X");EventiXSnip->GetYaxis()->SetTitle("Conteggi");
+
+    TH1D *EventiYSnip = new TH1D ("EventiYSnip" , "Taglio Semplice Proiezione y" , bin , -10 , 10);
+	EventiYSnip->GetXaxis()->SetTitle("Y");EventiYSnip->GetYaxis()->SetTitle("Conteggi");
+
     //variabili per i cut
     string basiccut="(y<0 || x<1)";
     string ipercut="(y<1/(x)+1 || y<0 || x<0)";
@@ -318,19 +348,36 @@ void MVA(int stamp=0)
     Sig=SS/sqrt(BS+SS);
     reiezione=100*(BB)/(BB+BS);
 
-    TLegend* legendIP = new TLegend(0.1,0.7,0.4,0.9); 
+    TLegend* legendIP = new TLegend(0.1,0.7,0.4,0.9);
+    legendIP->SetTextSize(0.026);
+    legendIP->SetTextFont(42);
     
-    legendIP->SetHeader(("Iperbole p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+    legendIP->SetHeader(("Iperbole #varepsilon: "+ToString(efficienza , 1)+"% p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+    
 
     legendIP->AddEntry(Sig2D , "Segnale-Segnale","lp");legendIP->AddEntry(Eff2D , "Segnale-Fondo","lp");
-    legendIP->AddEntry(Bkg2D , "Fondo-Segnale","lp");legendIP->AddEntry(Pur2D , "Fondo-Fondo","lp");
+    legendIP->AddEntry(Pur2D , "Fondo-Segnale","lp");legendIP->AddEntry(Bkg2D, "Fondo-Fondo","lp");
     legendIP->Draw();
+
+    TCanvas* PrIp1 = new TCanvas();
+    eve->Draw("x >> EventiXIP", ip , "");
+
+    TCanvas* PrIp2 = new TCanvas();
+    eve->Draw("y >> EventiYIP", ip , "");
 
     if (stamp==1 ||stamp==3){
         int Cartella1= system("mkdir -p MVA");
         c1->SaveAs("MVA/iperbole.png");
         c1->SaveAs("MVA/iperbole.root");
         c1->SaveAs("MVA/iperbole.pdf");
+
+        PrIp1->SaveAs("MVA/iperboleProiezioneX.png");
+        PrIp1->SaveAs("MVA/iperboleProiezioneX.root");
+        PrIp1->SaveAs("MVA/iperboleProiezioneX.pdf");
+
+        PrIp2->SaveAs("MVA/iperboleProiezioneY.png");
+        PrIp2->SaveAs("MVA/iperboleProiezioneY.root");
+        PrIp2->SaveAs("MVA/iperboleProiezioneY.pdf");
     }
 
     cout<<"##################################################################################\n";
@@ -367,19 +414,35 @@ void MVA(int stamp=0)
     Sig=SS/sqrt(BS+SS);
     reiezione=100*(BB)/(BB+BS);
 
-    TLegend* legend = new TLegend(0.1,0.7,0.4,0.9); 
+    TLegend* legend = new TLegend(0.1,0.7,0.45,0.9);
+    legend->SetTextSize(0.026); 
+    legend->SetTextFont(42);
 
-    legend->SetHeader(("Taglio Semplice p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+    legend->SetHeader(("Taglio Semplice #varepsilon: "+ToString(efficienza , 1)+"% p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+    
 
     legend->AddEntry(Sig2DS , "Segnale-Segnale","lp");legend->AddEntry(Eff2DS , "Segnale-Fondo","lp");
-    legend->AddEntry(Bkg2DS , "Fondo-Segnale","lp");legend->AddEntry(Pur2DS , "Fondo-Fondo","lp");
+    legend->AddEntry(Pur2DS , "Fondo-Segnale","lp");legend->AddEntry(Bkg2DS , "Fondo-Fondo","lp");
     legend->Draw();
+
+    TCanvas* PrSnip1 = new TCanvas();
+    eve->Draw("x >> EventiXSnip", snip , "");
+    TCanvas* PrSnip2 = new TCanvas();
+    eve->Draw("y >> EventiYSnip", snip , "");
 
     if (stamp==1 ||stamp==3){
         //int Cartella= system("mkdir -p MVA");
         cs->SaveAs("MVA/snip.png");
         cs->SaveAs("MVA/snip.root");
         cs->SaveAs("MVA/snip.pdf");
+
+        PrSnip1->SaveAs("MVA/snipProiezioneX.png");
+        PrSnip1->SaveAs("MVA/snipProiezioneX.root");
+        PrSnip1->SaveAs("MVA/snipProiezioneX.pdf");
+
+        PrSnip2->SaveAs("MVA/snipProiezioneY.png");
+        PrSnip2->SaveAs("MVA/snipProiezioneY.root");
+        PrSnip2->SaveAs("MVA/snipProiezioneY.pdf");
     }
 
     cout<<"##################################################################################\n";
@@ -460,18 +523,31 @@ void MVA(int stamp=0)
             j++;
 
         }
-        TLegend* legendg = new TLegend(); 
+        TLegend* legendg = new TLegend(0.1,0.3,0.35,0.5); 
+        legendg->SetTextFont(42);
         legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");legendg->AddEntry(pur , "Purezza Fondo","lp");
+
+        TLine *line = new TLine(4.36,-0.001,4.36,1.05);
+        line->SetLineColor(6);
+        line->SetLineWidth(2);
+
+        TLatex* lt = new TLatex(4.19 , -0.04 , "4.36");
+        lt->SetTextAlign(11);
+        lt->SetTextSize(0.03);
+        lt->SetTextFont(62);
 
         TCanvas* c_prova = new TCanvas();
         mg->Add(segnale);
         mg->Add(fondo);
         mg->Add(pur);
-        mg->SetTitle("Roc; SemiAsse; Efficienza");
+        mg->SetTitle("Roc; SemiAsse; ");
 
         c_prova->SetGrid();
         mg->Draw("APC");
         legendg->Draw();
+        line->Draw();
+        lt->Draw();
+
         gPad->AddExec("ex" , "Click(events)");
         if(stamp==1){
             c_prova->SaveAs("MVA/Roc.png");
@@ -498,20 +574,23 @@ void MVA(int stamp=0)
     TCanvas *c2 = new TCanvas();
     eve->Draw("y:x >> Eventi" , "","COLZ");
 
-    TCanvas *c3 = new TCanvas();
-    c3->Divide(2 ,1);
-    c3->cd(1);
+    TCanvas *c31 = new TCanvas();
     eve->Draw("x >> EventiX");
-    c3->cd(2);
+    TCanvas *c32 = new TCanvas();
     eve->Draw("y >> EventiY");
 
     if (stamp==1 ||stamp==3){
         c2->SaveAs("MVA/AllEv.png");
         c2->SaveAs("MVA/AllEv.root");
         c2->SaveAs("MVA/AllEv.pdf");
-        c3->SaveAs("MVA/Proizione.png");
-        c3->SaveAs("MVA/Proiezione.root");
-        c3->SaveAs("MVA/Proiezione.pdf");
+
+        c31->SaveAs("MVA/ProiezioneX.png");
+        c31->SaveAs("MVA/ProiezioneX.root");
+        c31->SaveAs("MVA/ProiezioneX.pdf");
+
+        c32->SaveAs("MVA/ProiezioneY.png");
+        c32->SaveAs("MVA/ProiezioneY.root");
+        c32->SaveAs("MVA/ProiezioneY.pdf");
 
     }
     //MyFile->Close();

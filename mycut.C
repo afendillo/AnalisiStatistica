@@ -26,7 +26,7 @@ string ToString(double n , int precision){
     }
     return i+"."+d;
 }
-void mycut()
+void mycut(int stamp = 0)
 {
 	Reset();
 	//Informazioni statistiche da stampare
@@ -59,7 +59,7 @@ void mycut()
     //per poter plottare gli eventi con 4 colori diversi definisco 4 TH2D
     
     TH2D *Sig2D = new TH2D ("Sig2D" , "Iperbole" , bin , -20 , 20 , bin , -20 , 20);
-	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen+3);Sig2D->SetMarkerSize(2);Sig2D->SetLineColor(kGreen+3);
+	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen);Sig2D->SetMarkerSize(2);Sig2D->SetLineColor(kGreen);
 
     //eventi background-background -> giallo
     TH2D *Bkg2D = new TH2D ("Bkg2D" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
@@ -98,13 +98,15 @@ void mycut()
     Sig=SS/sqrt(BS+SS);
     reiezione=100*(BB)/(BB+BS);
 
-    TLegend* legendIP = new TLegend(0.1,0.7,0.4,0.9); 
-    
-    legendIP->SetHeader(("Taglio Grafico p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+    TLegend* legend = new TLegend(0.1,0.7,0.45,0.9);
+    legend->SetTextSize(0.026); 
+    legend->SetTextFont(42);
 
-    legendIP->AddEntry(Sig2D , "Segnale-Segnale","lp");legendIP->AddEntry(Eff2D , "Segnale-Fondo","lp");
-    legendIP->AddEntry(Bkg2D , "Fondo-Segnale","lp");legendIP->AddEntry(Pur2D , "Fondo-Fondo","lp");
-    legendIP->Draw();
+    legend->SetHeader(("Taglio Grafico #varepsilon: "+ToString(efficienza , 1)+"% p: "+ToString(purezza , 1)+"% r: "+ToString(reiezione , 1)+"%").c_str(),"C");
+
+    legend->AddEntry(Sig2D , "Segnale-Segnale","lp");legend->AddEntry(Eff2D , "Segnale-Fondo","lp");
+    legend->AddEntry(Pur2D , "Fondo-Segnale","lp");legend->AddEntry(Bkg2D , "Fondo-Fondo","lp");
+    legend->Draw();
 
     cout<<"##################################################################################\n";
     
@@ -118,6 +120,33 @@ void mycut()
     cout <<"Reiezione del fondo Taglio Grafico: "<<reiezione<<"%"<<endl;
     cout <<"Significatività del taglio Taglio Grafico: "<<Sig<<endl;
     cout<<"##################################################################################\n";
+
+    TH1D *EventiX = new TH1D ("EventiX" , "Taglio Semplice Proiezione x" , bin , -10 , 10);
+	EventiX->GetXaxis()->SetTitle("X");EventiX->GetYaxis()->SetTitle("Conteggi");
+
+    TH1D *EventiY = new TH1D ("EventiY" , "Taglio Semplice Proiezione y" , bin , -10 , 10);
+	EventiY->GetXaxis()->SetTitle("Y");EventiY->GetYaxis()->SetTitle("Conteggi");
+
+    TCanvas *c3 = new TCanvas();
+    eve->Draw("x >> EventiX", "!CUTG" , "");
+
+    TCanvas *c4 = new TCanvas();
+    eve->Draw("y >> EventiY", "!CUTG" , "");
+
+    if(stamp==1){
+        int Cartella1= system("mkdir -p MVA");
+        c2->SaveAs("MVA/CutGrafico.png");
+        c2->SaveAs("MVA/CutGrafico.root");
+        c2->SaveAs("MVA/CutGrafico.pdf");
+
+        c3->SaveAs("MVA/CutGraficoProiezioneX.png");
+        c3->SaveAs("MVA/CutGraficoProiezioneX.root");
+        c3->SaveAs("MVA/CutGraficoProiezioneX.pdf");
+
+        c4->SaveAs("MVA/CutGraficoProiezioneY.png");
+        c4->SaveAs("MVA/CutGraficoProiezioneY.root");
+        c4->SaveAs("MVA/CutGraficoProiezioneY.pdf");
+    }
  
     return;
 }

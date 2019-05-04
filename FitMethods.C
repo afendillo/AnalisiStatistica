@@ -98,7 +98,7 @@ void FitMethods(int stamp=0)
 
 	double Max=Pi/2 , Min=-Pi/2 , random=0;
 	TRandom3 *RandGenerator = new TRandom3(time(0));
-	TRandom3 *Gauss = new TRandom3((unsigned)time( NULL ));
+	//TRandom3 *Gauss = new TRandom3((unsigned)time( NULL ));
 	TF1 *breit = new TF1("breit",BreitWigner, Massa-Gamma*Range, Massa+Gamma*Range , 1);
 	breit->SetParameter(0, 1);
 	
@@ -130,7 +130,7 @@ void FitMethods(int stamp=0)
 	for (int i = 0 ; i<NSig; i++)
 	{
 		random=Massa+Gamma/2*tan(RandGenerator->Rndm()*(Max-Min)+Min-TMath::ATan(2*Massa/Gamma));
-		random = random + Gauss->Gaus(0,0.01);
+		random = random + RandGenerator->Gaus(0,0.01);
 		BreitHisto->Fill(random);
 		BreitHisto1->Fill(random);
 		BreitHisto2->Fill(random);
@@ -162,7 +162,7 @@ void FitMethods(int stamp=0)
 	
 		if (randy <= frandx)
 		{			
-			randx = randx + Gauss->Gaus(0,0.01);
+			randx = randx + RandGenerator->Gaus(0,0.01);
 			BreitHisto->Fill(randx);
 			BreitHisto1->Fill(randx);
 			BreitHisto2->Fill(randx);
@@ -336,10 +336,11 @@ void FitMethods(int stamp=0)
 		ML->SaveAs("FitMethods/MaximumLikelihood.png");
 		ML->SaveAs("FitMethods/MaximumLikelihood.pdf");
 		ML->SaveAs("FitMethods/MaximumLikelihood.root");
+		cout<<"Press enter to quit:\n";
+		cin.ignore();
+		gApplication->Terminate();
 		}
-	cout<<"Press enter to quit:\n";
-	cin.ignore();
-	gApplication->Terminate();
+
 	return;	
 }
 

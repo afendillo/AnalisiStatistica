@@ -57,7 +57,11 @@ void unfold(double stamp = 0.25)
     gSystem->Load("/opt/RooUnfold/trunk/libRooUnfold.rootmap");
     int Cartella= system("mkdir -p UNFOLD");
 	//Informazioni statistiche da stampare
-	//gStyle->SetOptFit(1111);
+	gStyle->SetOptFit(1111);
+    gStyle->SetStatX(0.9);
+    gStyle->SetStatY(0.9);
+    gStyle->SetStatW(0.16);// Set width of stat-box (fraction of pad size)
+    gStyle->SetStatH(0.14);// Set height of stat-box (fraction of pad size
     double x, xs;
     double c[5]={0.3 , 0.5 , 0.7 , 0.9 , 5.0};
     string c_s[5]={"0_3" , "0_5", "0_7", "0_9", "5"};
@@ -150,10 +154,6 @@ void unfold(double stamp = 0.25)
         shape_reco->Draw("Psame");
         legend->Draw();
 
-        //TCanvas* c2 = new TCanvas();
-        //c2->SetGrid();
-        //unfold.Ereco().Draw("colz");
-
         TCanvas* c3 = new TCanvas();
         c3->SetGrid();
         TGraphErrors* gr = new TGraphErrors(NBIN,posx,scarti,errposx,errscarti);
@@ -180,7 +180,7 @@ void unfold(double stamp = 0.25)
             c3->SaveAs(("UNFOLD/bias_"+c_s[j]+".pdf").c_str());
 
             delete c1;
-            //delete c2;
+            delete c3;
             delete legend;
             delete shape_smuss;
             delete shape_reco;

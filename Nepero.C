@@ -288,7 +288,9 @@ void Nepero()
 	
 	double x=0.65 , y=0.2;
 	
-	auto legend = new TLegend(x,y,x+0.25 ,y+0.2);
+	auto legend = new TLegend(x-0.05,y,x+0.25 ,y+0.2);
+	legend->SetTextSize(0.024);
+	legend->SetTextFont(42);
 //	legend->SetHeader("Algoritmi","C"); // option "C" allows to center the header
 	legend->AddEntry(gr1,"Nepero Limite Float","lp");
 	legend->AddEntry(gr2,"Nepero Limite Double","lp");
