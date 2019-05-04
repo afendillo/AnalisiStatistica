@@ -72,10 +72,12 @@ void Integrale()
 	
 	Reset();
 	gStyle->SetOptFit(1111);
+	gStyle->SetOptStat(1211);
 	gStyle->SetStatX(0.9);
     gStyle->SetStatY(0.9);
     gStyle->SetStatW(0.16);// Set width of stat-box (fraction of pad size)
     gStyle->SetStatH(0.14);// Set height of stat-box (fraction of pad size)
+	gStyle->SetStatFormat("6.6g");
 //metodo 1
 
 	TRandom3 *RandGenerator = new TRandom3(time(0));
@@ -165,4 +167,3 @@ void Integrale()
 	c3->SaveAs("integrale/stratificato.root");
 	return;	
 }
-
