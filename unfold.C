@@ -12,7 +12,7 @@ static int Bin= 100;
 
 using namespace std;
 
-TRandom3* r = new TRandom3(time(0));
+TRandom3* r = new TRandom3();
 
 void Reset(){
 	//Recupera la lista di tutti i canvas e li cancella
@@ -114,21 +114,26 @@ void unfold(double stamp = 0.25)
         shape_reco->SetMarkerSize(0.7);
         shape_reco->SetMarkerStyle(20);
 
-
-
+        int NBIN = shape_reco->GetNbinsX();
+        double scarti[NBIN], errscarti[NBIN], posx[NBIN], errposx[NBIN];
         double chi=0, ev1, ev2, sigma1, sigma2;
 
-        for(int i =1; i<=shape_reco->GetNbinsX(); i++){
-            ev1=shape->GetBinContent(i);
-            sigma1=shape->GetBinError(i);
+        for(int i =0; i<NBIN; i++){
+            ev1=shape->GetBinContent(i+1);
+            sigma1=shape->GetBinError(i+1);
 
-            ev2=shape_reco->GetBinContent(i);
-            sigma2=shape_reco->GetBinError(i);
+            ev2=shape_reco->GetBinContent(i+1);
+            sigma2=shape_reco->GetBinError(i+1);
 
             //cout<<ev1<<" "<<ev2<<" "<<sigma1<<" "<<sigma2<<endl;
 
             if(sigma1>0 || sigma2>0) chi+=pow(ev1-ev2 , 2)/(sigma1*sigma1+sigma2*sigma2);
 
+            scarti[i] = ev1-ev2;
+            posx[i] = shape_reco->GetBinCenter(i+1);
+            errscarti[i] = sqrt(sigma1*sigma1+sigma2*sigma2);
+            errposx[i] = L/NBIN;
+            
         }
 
         cout<<"Chi^2 :"<<chi<<endl;
@@ -145,20 +150,37 @@ void unfold(double stamp = 0.25)
         shape_reco->Draw("Psame");
         legend->Draw();
 
-        TCanvas* c2 = new TCanvas();
-        c2->SetGrid();
-        unfold.Ereco().Draw("colz");
+        //TCanvas* c2 = new TCanvas();
+        //c2->SetGrid();
+        //unfold.Ereco().Draw("colz");
+
+        TCanvas* c3 = new TCanvas();
+        c3->SetGrid();
+        TGraphErrors* gr = new TGraphErrors(NBIN,posx,scarti,errposx,errscarti);
+        
+        gr->SetMarkerStyle(20);
+        gr->SetMarkerColor(9);
+        gr->SetMarkerSize(1);
+        gr->SetTitle("Unfolding Bias");
+        gr->Draw("ABP");
+        gr->Fit("pol0");
+
+        
         if(stamp <=0){
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".png").c_str());
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".root").c_str());
             c1->SaveAs(("UNFOLD/unfold_"+c_s[j]+".pdf").c_str());
 
-            c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".png").c_str());
-            c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".root").c_str());
-            c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".pdf").c_str());
+            //c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".png").c_str());
+            //c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".root").c_str());
+            //c2->SaveAs(("UNFOLD/covariance_"+c_s[j]+".pdf").c_str());
+
+            c3->SaveAs(("UNFOLD/bias_"+c_s[j]+".png").c_str());
+            c3->SaveAs(("UNFOLD/bias_"+c_s[j]+".root").c_str());
+            c3->SaveAs(("UNFOLD/bias_"+c_s[j]+".pdf").c_str());
 
             delete c1;
-            delete c2;
+            //delete c2;
             delete legend;
             delete shape_smuss;
             delete shape_reco;
