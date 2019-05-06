@@ -58,7 +58,7 @@ void mycut(int stamp = 0)
 
     //per poter plottare gli eventi con 4 colori diversi definisco 4 TH2D
     
-    TH2D *Sig2D = new TH2D ("Sig2D" , "Iperbole" , bin , -20 , 20 , bin , -20 , 20);
+    TH2D *Sig2D = new TH2D ("Sig2D" , "Taglio Grafico" , bin , -20 , 20 , bin , -20 , 20);
 	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen);Sig2D->SetMarkerSize(2);Sig2D->SetLineColor(kGreen);
 
     //eventi background-background -> giallo
@@ -121,10 +121,10 @@ void mycut(int stamp = 0)
     cout <<"Significatività del taglio Taglio Grafico: "<<Sig<<endl;
     cout<<"##################################################################################\n";
 
-    TH1D *EventiX = new TH1D ("EventiX" , "Taglio Semplice Proiezione x" , bin , -10 , 10);
+    TH1D *EventiX = new TH1D ("EventiX" , "Taglio Grafico Proiezione x" , bin , -10 , 10);
 	EventiX->GetXaxis()->SetTitle("X");EventiX->GetYaxis()->SetTitle("Conteggi");
 
-    TH1D *EventiY = new TH1D ("EventiY" , "Taglio Semplice Proiezione y" , bin , -10 , 10);
+    TH1D *EventiY = new TH1D ("EventiY" , "Taglio Grafico Proiezione y" , bin , -10 , 10);
 	EventiY->GetXaxis()->SetTitle("Y");EventiY->GetYaxis()->SetTitle("Conteggi");
 
     TCanvas *c3 = new TCanvas();
