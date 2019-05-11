@@ -10,6 +10,12 @@ mycut.txt
 events.txt
 prova.txt
 ElCut.C
-
 FAMU.pptx
 MVA/MVA.txt
+TMVAClassificationApplication.C
+TMVAClassification.C
+ntupla.C
+*.eps
+dataset/weights/TMVAClassification_MLP.class.C
+*.xml
+es7training/

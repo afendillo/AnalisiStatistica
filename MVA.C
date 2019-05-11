@@ -3,8 +3,15 @@
 //.x MVA.C(1) salva i vari canvas in .png e .root NB: i canvas creati cliccando sui punti vanno salvati manualmente.
 //.x MVA.C(2) salva la ntupla in un file root. Necessario se si vuole usare mycut.C per un taglio grafico.
 //Taglio grafico: show tollbar-> forbice. Fai il taglio, SaveAs -> root file. Avvia mycut.C
-#define NSig 1e4
-#define NBkg 1e6
+
+#include <cstdlib>
+#include <iostream>
+#include <map>
+#include <string>
+
+
+#define NSig 1e5
+#define NBkg 2*1e5
 #define bin 500
 #define rho 0.4
 const static double AngBkg=47;//21.7749;//gradi
@@ -27,7 +34,7 @@ void Reset(){
 	return;
 }
 
-string ToString(double n , int precision){
+string ToString(double n , int precision , string separator="."){
     string i=to_string((int)n);
     string d;
     double decimal=(n-(int)n)*10;
@@ -35,7 +42,7 @@ string ToString(double n , int precision){
         d+=to_string((int)(decimal));
         decimal=(decimal-(int)decimal)*10;
     }
-    return i+"."+d;
+    return i+separator+d;
 }
 
 string Ellisse(double x0 ,double y0, double rx,double ry , double angle){
@@ -86,18 +93,22 @@ void Click(TNtuple* ev)
 
         TH2D *Sig2Dt = new TH2D ("" , ("Ellisse Semi-Asse Maggiore: "+ToString(pX,2)).c_str() , bin , -20 , 20 , bin , -20 , 20);
         Sig2Dt->GetXaxis()->SetTitle("X");Sig2Dt->GetYaxis()->SetTitle("Y");Sig2Dt->SetMarkerColor(kGreen);Sig2Dt->SetMarkerSize(2);Sig2Dt->SetLineColor(kGreen);
+        Sig2Dt->SetLineWidth(2);
 
         //eventi background-background -> giallo
         TH2D *Bkg2Dt = new TH2D ("" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
         Bkg2Dt->GetXaxis()->SetTitle("X");Bkg2Dt->GetYaxis()->SetTitle("Y");Bkg2Dt->SetMarkerColor(kYellow);Bkg2Dt->SetMarkerSize(2);Bkg2Dt->SetLineColor(kYellow);
+        Bkg2Dt->SetLineWidth(2);
 
         //eventi background-segnale -> rosso
         TH2D *Pur2Dt = new TH2D ("" , "Pur2D" , bin , -20 , 20 , bin , -20 , 20);
         Pur2Dt->GetXaxis()->SetTitle("X");Pur2Dt->GetYaxis()->SetTitle("Y");Pur2Dt->SetMarkerColor(kRed);Pur2Dt->SetMarkerSize(2);Pur2Dt->SetLineColor(kRed);
+        Pur2Dt->SetLineWidth(2);
 
         //eventi segnale-background -> blu
         TH2D *Eff2Dt = new TH2D ("" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
         Eff2Dt->GetXaxis()->SetTitle("X");Eff2Dt->GetYaxis()->SetTitle("Y");Eff2Dt->SetMarkerColor(kBlue);Eff2Dt->SetMarkerSize(2);Eff2Dt->SetLineColor(kBlue);
+        Eff2Dt->SetLineWidth(2);
 
         //Proiezione x
         TH1D *AllX = new TH1D ("" , "Ellisse Proiezione X" , bin , -20 , 20);
@@ -190,17 +201,17 @@ void Click(TNtuple* ev)
         AllY->Draw();
 
         if(STAMP==1){
-            c_temp->SaveAs("MVA/ellisse.pdf");
-            c_temp->SaveAs("MVA/ellisse.png");
-            c_temp->SaveAs("MVA/ellisse.root");
+            //c_temp->SaveAs("MVA/ellisse.pdf");
+            c_temp->SaveAs(("MVA/ellisse"+ToString(pX ,2 ,"_")+".png").c_str());
+            c_temp->SaveAs(("MVA/ellisse"+ToString(pX ,2 ,"_")+".root").c_str());
 
-            cp1->SaveAs("MVA/ellisseProiezioneX.pdf");
-            cp1->SaveAs("MVA/ellisseProiezioneX.png");
-            cp1->SaveAs("MVA/ellisseProiezioneX.root");
+            cp1->SaveAs(("MVA/ellisseProiezioneX"+ToString(pX ,2 ,"_")+".pdf").c_str());
+            cp1->SaveAs(("MVA/ellisseProiezioneX"+ToString(pX ,2 ,"_")+".png").c_str());
+            cp1->SaveAs(("MVA/ellisseProiezioneX"+ToString(pX ,2 ,"_")+".root").c_str());
 
-            cp2->SaveAs("MVA/ellisseProiezioneY.pdf");
-            cp2->SaveAs("MVA/ellisseProiezioneY.png");
-            cp2->SaveAs("MVA/ellisseProiezioneY.root");
+            cp2->SaveAs(("MVA/ellisseProiezioneY"+ToString(pX ,2 ,"_")+".pdf").c_str());
+            cp2->SaveAs(("MVA/ellisseProiezioneY"+ToString(pX ,2 ,"_")+".png").c_str());
+            cp2->SaveAs(("MVA/ellisseProiezioneY"+ToString(pX ,2 ,"_")+".root").c_str());
         }
         
         return;
@@ -277,35 +288,43 @@ void MVA(int stamp=0)
     //eventi segnale-segnale -> verde
     TH2D *Sig2D = new TH2D ("Sig2D" , "Iperbole" , bin , -20 , 20 , bin , -20 , 20);
 	Sig2D->GetXaxis()->SetTitle("X");Sig2D->GetYaxis()->SetTitle("Y");Sig2D->SetMarkerColor(kGreen);Sig2D->SetMarkerSize(2);Sig2D->SetLineColor(kGreen);
+    Sig2D->SetLineWidth(2);
 
     //eventi background-background -> giallo
     TH2D *Bkg2D = new TH2D ("Bkg2D" , "Bkg2D" , bin , -20 , 20 , bin , -20 , 20);
 	Bkg2D->GetXaxis()->SetTitle("X");Bkg2D->GetYaxis()->SetTitle("Y");Bkg2D->SetMarkerColor(kYellow);Bkg2D->SetMarkerSize(2);Bkg2D->SetLineColor(kYellow);
+    Bkg2D->SetLineWidth(2);
 
     //eventi background-segnale -> rosso
     TH2D *Pur2D = new TH2D ("Pur2D" , "Pur2D" , bin , -20 , 20 , bin , -20 , 20);
 	Pur2D->GetXaxis()->SetTitle("X");Pur2D->GetYaxis()->SetTitle("Y");Pur2D->SetMarkerColor(kRed);Pur2D->SetMarkerSize(2);Pur2D->SetLineColor(kRed);
+    Pur2D->SetLineWidth(2);
 
     //eventi segnale-background -> blu
     TH2D *Eff2D = new TH2D ("Eff2D" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
 	Eff2D->GetXaxis()->SetTitle("X");Eff2D->GetYaxis()->SetTitle("Y");Eff2D->SetMarkerColor(kBlue);Eff2D->SetMarkerSize(2);Eff2D->SetLineColor(kBlue);
+    Eff2D->SetLineWidth(2);
     
     //########Snip######################################################################################################################################
     //eventi segnale-segnale -> verde
     TH2D *Sig2DS = new TH2D ("Sig2DS" , "Taglio Semplice" , bin , -20 , 20 , bin , -20 , 20);
 	Sig2DS->GetXaxis()->SetTitle("X");Sig2DS->GetYaxis()->SetTitle("Y");Sig2DS->SetMarkerColor(kGreen);Sig2DS->SetMarkerSize(2);Sig2DS->SetLineColor(kGreen);
+    Sig2DS->SetLineWidth(2);
 
     //eventi background-background -> giallo
     TH2D *Bkg2DS = new TH2D ("Bkg2DS" , "Bkg2DS" , bin , -20 , 20 , bin , -20 , 20);
 	Bkg2DS->GetXaxis()->SetTitle("X");Bkg2DS->GetYaxis()->SetTitle("Y");Bkg2DS->SetMarkerColor(kYellow);Bkg2DS->SetMarkerSize(2);Bkg2DS->SetLineColor(kYellow);
+    Bkg2DS->SetLineWidth(2);
 
     //eventi background-segnale -> rosso
     TH2D *Pur2DS = new TH2D ("Pur2DS" , "Pur2DS" , bin , -20 , 20 , bin , -20 , 20);
 	Pur2DS->GetXaxis()->SetTitle("X");Pur2DS->GetYaxis()->SetTitle("Y");Pur2DS->SetMarkerColor(kRed);Pur2DS->SetMarkerSize(2);Pur2DS->SetLineColor(kRed);
+    Pur2DS->SetLineWidth(2);
 
     //eventi segnale-background -> blu
     TH2D *Eff2DS = new TH2D ("Eff2DS" , "Eff2DS" , bin , -20 , 20 , bin , -20 , 20);
 	Eff2DS->GetXaxis()->SetTitle("X");Eff2DS->GetYaxis()->SetTitle("Y");Eff2DS->SetMarkerColor(kBlue);Eff2DS->SetMarkerSize(2);Eff2DS->SetLineColor(kBlue);
+    Eff2DS->SetLineWidth(2);
 
     //#################################################################################################################################################
 
@@ -322,8 +341,8 @@ void MVA(int stamp=0)
 	EventiYSnip->GetXaxis()->SetTitle("Y");EventiYSnip->GetYaxis()->SetTitle("Conteggi");
 
     //variabili per i cut
-    string basiccut="(y<0 || x<1)";
-    string ipercut="(y<1/(x)+1 || y<0 || x<0)";
+    string basiccut="(y<1.5 || x<0.5)";
+    string ipercut="(y<1/(x-0.5)+1 || y<1 || x<0.5)";
 
     //Cut testati
     TCut ip = ipercut.c_str();
@@ -369,7 +388,7 @@ void MVA(int stamp=0)
         int Cartella1= system("mkdir -p MVA");
         c1->SaveAs("MVA/iperbole.png");
         c1->SaveAs("MVA/iperbole.root");
-        c1->SaveAs("MVA/iperbole.pdf");
+        //c1->SaveAs("MVA/iperbole.pdf");
 
         PrIp1->SaveAs("MVA/iperboleProiezioneX.png");
         PrIp1->SaveAs("MVA/iperboleProiezioneX.root");
@@ -401,6 +420,8 @@ void MVA(int stamp=0)
     eve->Draw("y:x >> Eff2DS", "s>0" && !snip, "SAME");
     eve->Draw("y:x >> Bkg2DS", "s<1" && !snip, "SAME");
     eve->Draw("y:x >> Pur2DS", "s<1" && snip, "SAME");
+
+    cs->Update();
 
     //calcolo purezza ed efficienza del taglio
 
@@ -434,7 +455,7 @@ void MVA(int stamp=0)
         //int Cartella= system("mkdir -p MVA");
         cs->SaveAs("MVA/snip.png");
         cs->SaveAs("MVA/snip.root");
-        cs->SaveAs("MVA/snip.pdf");
+        //cs->SaveAs("MVA/snip.pdf");
 
         PrSnip1->SaveAs("MVA/snipProiezioneX.png");
         PrSnip1->SaveAs("MVA/snipProiezioneX.root");
@@ -493,8 +514,10 @@ void MVA(int stamp=0)
         TH2D *Eff2DT = new TH2D ("Eff2DT" , "Eff2D" , bin , -20 , 20 , bin , -20 , 20);
         Eff2DT->GetXaxis()->SetTitle("X");Eff2DT->GetYaxis()->SetTitle("Y");Eff2DT->SetMarkerColor(kBlue);
 
+        double M=0, pointX=0;
+
         int j=0;
-        for(double i =1; i<=a; i=i+passo){
+        for(double i =1; i<=a+passo; i=i+passo){
 
             ellisse = (Ellisse(4, 4, i, AsseMin , AngBkg)).c_str();
 
@@ -515,7 +538,11 @@ void MVA(int stamp=0)
             Sig=SS/sqrt(BS+SS);
             reiezione=100*(BB)/(BB+BS);
 
-            cout<<j+1<<") Purezza= "<<purezza<<" Efficienza= "<<efficienza<<" , Reiezione="<<reiezione<<" , Asse: "<<i<<" , Significatività: "<<Sig<<endl;
+            if(Sig>M) {
+                M=Sig;
+                pointX=i;
+            }
+            cout<<j+1<<") Purezza= "<<purezza<<"% Efficienza= "<<efficienza<<"% , Reiezione="<<reiezione<<"% , Asse: "<<i<<" , Significatività: "<<Sig<<endl;
 
             segnale->SetPoint(j,i , efficienza/100);
             fondo->SetPoint(j,i , reiezione/100);
@@ -523,18 +550,9 @@ void MVA(int stamp=0)
             j++;
 
         }
-        TLegend* legendg = new TLegend(0.1,0.3,0.35,0.5); 
+        TLegend* legendg = new TLegend(0.62,0.14,0.9,0.31); 
         legendg->SetTextFont(42);
         legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");legendg->AddEntry(pur , "Purezza Fondo","lp");
-
-        TLine *line = new TLine(4.36,-0.001,4.36,1.05);
-        line->SetLineColor(6);
-        line->SetLineWidth(2);
-
-        TLatex* lt = new TLatex(4.19 , -0.04 , "4.36");
-        lt->SetTextAlign(11);
-        lt->SetTextSize(0.03);
-        lt->SetTextFont(62);
 
         TCanvas* c_prova = new TCanvas();
         mg->Add(segnale);
@@ -545,6 +563,19 @@ void MVA(int stamp=0)
         c_prova->SetGrid();
         mg->Draw("APC");
         legendg->Draw();
+        c_prova->Update();
+
+        //cout<<pointX<<" "<<gPad->GetUymin()<<" "<<gPad->GetUymax()<<endl;
+        
+        TLine *line = new TLine(pointX,gPad->GetUymin(),pointX,gPad->GetUymax());
+        line->SetLineColor(6);
+        line->SetLineWidth(2);
+
+        TLatex* lt = new TLatex(pointX-0.07 , gPad->GetUymin()-0.02 , (ToString(pointX ,2 ).c_str()));
+        lt->SetTextAlign(11);
+        lt->SetTextSize(0.03);
+        lt->SetTextFont(62);
+
         line->Draw();
         lt->Draw();
 
@@ -582,7 +613,7 @@ void MVA(int stamp=0)
     if (stamp==1 ||stamp==3){
         c2->SaveAs("MVA/AllEv.png");
         c2->SaveAs("MVA/AllEv.root");
-        c2->SaveAs("MVA/AllEv.pdf");
+        //c2->SaveAs("MVA/AllEv.pdf");
 
         c31->SaveAs("MVA/ProiezioneX.png");
         c31->SaveAs("MVA/ProiezioneX.root");

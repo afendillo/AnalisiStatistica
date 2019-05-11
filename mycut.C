@@ -1,5 +1,5 @@
-#define NSig 10000
-#define NBkg 1000000
+#define NSig 1e5
+#define NBkg 2*1e5
 #define bin 1000
 #define rho 0.4
 using namespace std;
@@ -137,7 +137,7 @@ void mycut(int stamp = 0)
         int Cartella1= system("mkdir -p MVA");
         c2->SaveAs("MVA/CutGrafico.png");
         c2->SaveAs("MVA/CutGrafico.root");
-        c2->SaveAs("MVA/CutGrafico.pdf");
+        //c2->SaveAs("MVA/CutGrafico.pdf");
 
         c3->SaveAs("MVA/CutGraficoProiezioneX.png");
         c3->SaveAs("MVA/CutGraficoProiezioneX.root");
