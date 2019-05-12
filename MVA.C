@@ -552,7 +552,7 @@ void MVA(int stamp=0)
         }
         TLegend* legendg = new TLegend(0.62,0.14,0.9,0.31); 
         legendg->SetTextFont(42);
-        legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");legendg->AddEntry(pur , "Purezza Fondo","lp");
+        legendg->AddEntry(segnale , "Efficienza Segnale","lp");legendg->AddEntry(fondo , "Reiezione Fondo","lp");legendg->AddEntry(pur , "Purezza Segnale","lp");
 
         TCanvas* c_prova = new TCanvas();
         mg->Add(segnale);
